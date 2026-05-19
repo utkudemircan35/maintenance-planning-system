@@ -16,9 +16,12 @@ function renderTechWO(el) {
   }).join('') : '<div class="col-12"><div class="panel"><div class="panel-body text-center py-5"><i class="fas fa-check-circle fa-3x mb-3" style="color:var(--green);"></i><h5>Tüm iş emirleri tamamlandı!</h5></div></div></div>'}</div>`;
 }
 
-function startWO(id) {
+async function startWO(id) {
   const w = DEMO_WORK_ORDERS.find(x=>x.WOID===id);
-  if(w) w.Status = 'In Progress';
+  if(w) {
+    w.Status = 'In Progress';
+    await supabase.from('work_orders').update({ Status: 'In Progress' }).eq('WOID', id);
+  }
   showToast('İş emri başlatıldı: '+id);
   renderPage(currentPage);
 }
@@ -44,12 +47,15 @@ function renderMaintenanceLogForm(el, preWO) {
     </div></form></div></div>`;
 }
 
-function submitLog(e) {
+async function submitLog(e) {
   e.preventDefault();
   const woId = document.getElementById('logWO').value;
   const wo = DEMO_WORK_ORDERS.find(w=>w.WOID===woId);
-  if(wo) wo.Status = 'Completed';
-  DEMO_MAINTENANCE_LOGS.push({
+  if(wo) {
+    wo.Status = 'Completed';
+    await supabase.from('work_orders').update({ Status: 'Completed' }).eq('WOID', woId);
+  }
+  const newLog = {
     LogID:'ML-2024-'+ String(DEMO_MAINTENANCE_LOGS.length+1).padStart(5,'0'),
     WOID:woId, MachineID:wo?wo.MachineID:'', TechnicianID:currentUser.UserID,
     InterventionDate:new Date().toISOString().split('T')[0],
@@ -58,7 +64,9 @@ function submitLog(e) {
     ActionsPerformed:document.getElementById('logActions').value,
     Outcome:document.getElementById('logOutcome').value,
     CompletionTimestamp:new Date().toISOString()
-  });
+  };
+  DEMO_MAINTENANCE_LOGS.push(newLog);
+  await supabase.from('maintenance_records').insert([newLog]);
   showToast('Bakım log kaydı oluşturuldu!');
   navigateTo('dashboard');
 }
@@ -78,9 +86,13 @@ function renderAlerts(el) {
   }).join('')}</div></div>`;
 }
 
-function ackAlert(id) {
+async function ackAlert(id) {
   const a=DEMO_ALERTS.find(x=>x.AlertID===id);
-  if(a){a.AcknowledgedBy=currentUser.UserID;a.AcknowledgementTimestamp=new Date().toISOString();}
+  if(a){
+    a.AcknowledgedBy=currentUser.UserID;
+    a.AcknowledgementTimestamp=new Date().toISOString();
+    await supabase.from('notifications').update({ AcknowledgedBy: a.AcknowledgedBy, AcknowledgementTimestamp: a.AcknowledgementTimestamp }).eq('AlertID', id);
+  }
   showToast('Alert onaylandı.');
   renderPage(currentPage);
   renderTopbar();
@@ -101,21 +113,23 @@ function renderProductionEntry(el) {
   document.getElementById('prodDate').valueAsDate = new Date();
 }
 
-function submitProduction(e) {
+async function submitProduction(e) {
   e.preventDefault();
   const mid = document.getElementById('prodMachine').value;
   const m = getMachineById(mid);
   const hours = parseFloat(document.getElementById('prodHours').value);
   const vol = parseInt(document.getElementById('prodVolume').value);
   const util = m ? Math.min(100, (vol / (m.NominalCapacity * (hours/8))) * 100) : 75;
-  DEMO_PRODUCTION_RECORDS.push({
+  const newProd = {
     RecordID:'PR-2024-'+String(DEMO_PRODUCTION_RECORDS.length+1).padStart(5,'0'),
     MachineID:mid, RecordedBy:currentUser.UserID,
     ShiftDate:document.getElementById('prodDate').value,
     ShiftType:document.getElementById('prodShift').value,
     ProductionVolume:vol, CapacityUtilizationRate:+util.toFixed(1),
     RuntimeHours:hours, EntryTimestamp:new Date().toISOString()
-  });
+  };
+  DEMO_PRODUCTION_RECORDS.push(newProd);
+  await supabase.from('production_data').insert([newProd]);
   showToast('Üretim verisi kaydedildi!');
   e.target.reset();
   document.getElementById('prodDate').valueAsDate = new Date();
@@ -163,9 +177,9 @@ function renderWorkOrders(el) {
     </form></div></div></div></div>`;
 }
 
-function submitWO(e) {
+async function submitWO(e) {
   e.preventDefault();
-  DEMO_WORK_ORDERS.push({
+  const newWo = {
     WOID:'WO-2024-'+String(DEMO_WORK_ORDERS.length+1).padStart(5,'0'),
     PlanID:null, MachineID:document.getElementById('woMachine').value,
     AssignedTechnicianID:document.getElementById('woTech').value,
@@ -173,7 +187,9 @@ function submitWO(e) {
     PriorityLevel:document.getElementById('woPriority').value,
     ScheduledDate:document.getElementById('woDate').value,
     Status:'Open', CreatedTimestamp:new Date().toISOString()
-  });
+  };
+  DEMO_WORK_ORDERS.push(newWo);
+  await supabase.from('work_orders').insert([newWo]);
   bootstrap.Modal.getInstance(document.getElementById('woModal')).hide();
   showToast('İş emri oluşturuldu!');
   renderWorkOrders(document.getElementById('mainContent'));

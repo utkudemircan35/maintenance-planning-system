@@ -140,4 +140,7 @@ function showToast(msg, type='success') {
   setTimeout(() => { const el = document.getElementById(id); if(el) el.remove(); }, 3000);
 }
 
-document.addEventListener('DOMContentLoaded', initApp);
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadData();
+  initApp();
+});

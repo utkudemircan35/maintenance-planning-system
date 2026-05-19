@@ -56,31 +56,35 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
   <script src="js/data.js"></script>
   <script>
-    // Check if already logged in
-    const session = sessionStorage.getItem('pmdss_user');
-    if (session) window.location.href = 'dashboard.html';
+    loadData().then(() => {
+      // Check if already logged in
+      const session = sessionStorage.getItem('pmdss_user');
+      if (session) window.location.href = 'dashboard.html';
 
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const email = document.getElementById('loginEmail').value.trim();
-      const password = document.getElementById('loginPassword').value;
-      const errEl = document.getElementById('loginError');
+      document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const email = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPassword').value;
+        const errEl = document.getElementById('loginError');
 
-      const user = getUserByEmail(email);
-      if (!user || user.Password !== password) {
-        errEl.classList.remove('d-none');
-        errEl.textContent = 'Geçersiz e-posta veya şifre.';
-        return;
-      }
-      if (user.AccountStatus !== 'Active') {
-        errEl.classList.remove('d-none');
-        errEl.textContent = 'Bu hesap aktif değil.';
-        return;
-      }
-      sessionStorage.setItem('pmdss_user', JSON.stringify(user));
-      window.location.href = 'dashboard.html';
+        const user = getUserByEmail(email);
+        if (!user || user.Password !== password) {
+          errEl.classList.remove('d-none');
+          errEl.textContent = 'Geçersiz e-posta veya şifre.';
+          return;
+        }
+        if (user.AccountStatus !== 'Active') {
+          errEl.classList.remove('d-none');
+          errEl.textContent = 'Bu hesap aktif değil.';
+          return;
+        }
+        sessionStorage.setItem('pmdss_user', JSON.stringify(user));
+        window.location.href = 'dashboard.html';
+      });
     });
   </script>
 </body>

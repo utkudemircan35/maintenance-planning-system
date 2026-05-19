@@ -95,15 +95,23 @@ function renderPendingPlansTable() {
   }).join('')}</tbody></table></div>`;
 }
 
-function approvePlan(id) {
+async function approvePlan(id) {
   const p = DEMO_MAINTENANCE_PLANS.find(x=>x.PlanID===id);
-  if(p){p.PlanStatus='Approved';p.ApprovedBy=currentUser.UserID;p.ApprovalTimestamp=new Date().toISOString();}
+  if(p){
+    p.PlanStatus='Approved';
+    p.ApprovedBy=currentUser.UserID;
+    p.ApprovalTimestamp=new Date().toISOString();
+    await supabase.from('maintenance_schedules').update({ PlanStatus: p.PlanStatus, ApprovedBy: p.ApprovedBy, ApprovalTimestamp: p.ApprovalTimestamp }).eq('PlanID', id);
+  }
   showToast('Plan onaylandı: '+id);
   renderPage(currentPage);
 }
-function postponePlan(id) {
+async function postponePlan(id) {
   const p = DEMO_MAINTENANCE_PLANS.find(x=>x.PlanID===id);
-  if(p) p.PlanStatus='Postponed';
+  if(p) {
+    p.PlanStatus='Postponed';
+    await supabase.from('maintenance_schedules').update({ PlanStatus: p.PlanStatus }).eq('PlanID', id);
+  }
   showToast('Plan ertelendi: '+id,'warning');
   renderPage(currentPage);
 }
