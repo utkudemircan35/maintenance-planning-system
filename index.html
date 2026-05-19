@@ -86,18 +86,21 @@
 
         let user = null;
 
-        // 1) Try direct Supabase query against "users" table
+        // 1) Try direct Supabase query against "users" table (with 3s timeout)
         if (supabaseClient) {
           try {
-            const { data, error } = await supabaseClient
-              .from('users')
-              .select('*')
-              .eq('email', email)
-              .eq('password', password)
-              .maybeSingle();
+            const result = await Promise.race([
+              supabaseClient
+                .from('users')
+                .select('*')
+                .eq('email', email)
+                .eq('password', password)
+                .maybeSingle(),
+              new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
+            ]);
 
-            if (!error && data) {
-              user = mapSupabaseUser(data);
+            if (!result.error && result.data) {
+              user = mapSupabaseUser(result.data);
               console.log('✅ Authenticated via Supabase users table');
             }
           } catch (err) {
