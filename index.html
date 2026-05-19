@@ -18,7 +18,12 @@
       </div>
       <p class="login-subtitle">Üretim Yoğunluğuna Dayalı Akıllı Makine Bakım Planlama Sistemi</p>
 
-      <form id="loginForm" class="form-modern">
+      <div id="loadingIndicator" style="text-align:center;padding:20px;">
+        <div class="spinner-border text-primary" role="status" style="width:2rem;height:2rem;"></div>
+        <p style="font-size:13px;color:#94a3b8;margin-top:8px;">Sistem yükleniyor...</p>
+      </div>
+
+      <form id="loginForm" class="form-modern" style="display:none;">
         <div id="loginError" class="alert alert-danger d-none" style="font-size:13px;border-radius:10px;"></div>
 
         <div class="mb-3">
@@ -60,10 +65,17 @@
   <script src="js/supabase.js"></script>
   <script src="js/data.js"></script>
   <script>
-    loadData().then(() => {
+    (async function() {
       // Check if already logged in
       const session = sessionStorage.getItem('pmdss_user');
-      if (session) window.location.href = 'dashboard.html';
+      if (session) { window.location.href = 'dashboard.html'; return; }
+
+      // Load data (Supabase or fallback)
+      await loadData();
+
+      // Hide loading, show form
+      document.getElementById('loadingIndicator').style.display = 'none';
+      document.getElementById('loginForm').style.display = 'block';
 
       document.getElementById('loginForm').addEventListener('submit', function(e) {
         e.preventDefault();
@@ -85,7 +97,7 @@
         sessionStorage.setItem('pmdss_user', JSON.stringify(user));
         window.location.href = 'dashboard.html';
       });
-    });
+    })();
   </script>
 </body>
 </html>

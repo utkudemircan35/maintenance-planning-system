@@ -101,7 +101,7 @@ async function approvePlan(id) {
     p.PlanStatus='Approved';
     p.ApprovedBy=currentUser.UserID;
     p.ApprovalTimestamp=new Date().toISOString();
-    await supabase.from('maintenance_schedules').update({ PlanStatus: p.PlanStatus, ApprovedBy: p.ApprovedBy, ApprovalTimestamp: p.ApprovalTimestamp }).eq('PlanID', id);
+    db.update('maintenance_schedules', { PlanStatus: p.PlanStatus, ApprovedBy: p.ApprovedBy, ApprovalTimestamp: p.ApprovalTimestamp }, 'PlanID', id);
   }
   showToast('Plan onaylandı: '+id);
   renderPage(currentPage);
@@ -110,7 +110,7 @@ async function postponePlan(id) {
   const p = DEMO_MAINTENANCE_PLANS.find(x=>x.PlanID===id);
   if(p) {
     p.PlanStatus='Postponed';
-    await supabase.from('maintenance_schedules').update({ PlanStatus: p.PlanStatus }).eq('PlanID', id);
+    db.update('maintenance_schedules', { PlanStatus: p.PlanStatus }, 'PlanID', id);
   }
   showToast('Plan ertelendi: '+id,'warning');
   renderPage(currentPage);

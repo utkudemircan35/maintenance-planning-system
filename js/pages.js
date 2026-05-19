@@ -20,7 +20,7 @@ async function startWO(id) {
   const w = DEMO_WORK_ORDERS.find(x=>x.WOID===id);
   if(w) {
     w.Status = 'In Progress';
-    await supabase.from('work_orders').update({ Status: 'In Progress' }).eq('WOID', id);
+    db.update('work_orders', { Status: 'In Progress' }, 'WOID', id);
   }
   showToast('İş emri başlatıldı: '+id);
   renderPage(currentPage);
@@ -53,7 +53,7 @@ async function submitLog(e) {
   const wo = DEMO_WORK_ORDERS.find(w=>w.WOID===woId);
   if(wo) {
     wo.Status = 'Completed';
-    await supabase.from('work_orders').update({ Status: 'Completed' }).eq('WOID', woId);
+    db.update('work_orders', { Status: 'Completed' }, 'WOID', woId);
   }
   const newLog = {
     LogID:'ML-2024-'+ String(DEMO_MAINTENANCE_LOGS.length+1).padStart(5,'0'),
@@ -66,16 +66,16 @@ async function submitLog(e) {
     CompletionTimestamp:new Date().toISOString()
   };
   DEMO_MAINTENANCE_LOGS.push(newLog);
-  await supabase.from('maintenance_records').insert([newLog]);
+  db.insert('maintenance_records', [newLog]);
   showToast('Bakım log kaydı oluşturuldu!');
   navigateTo('dashboard');
 }
 
 // Alerts
 function renderAlerts(el) {
-  const alerts = currentUser.Role==='Technician' ? DEMO_ALERTS : DEMO_ALERTS;
+  const alerts = DEMO_ALERTS;
   el.innerHTML = `<div class="panel fade-in"><div class="panel-header"><h5><i class="fas fa-bell me-2" style="color:var(--accent)"></i>Bildirimler</h5></div>
-  <div class="panel-body">${alerts.map(a=>{
+  <div class="panel-body">${alerts.length ? alerts.map(a=>{
     const m=getMachineById(a.MachineID);
     return `<div class="alert-item"><div class="alert-dot ${a.SeverityLevel.toLowerCase()}"></div>
     <div style="flex:1"><div style="font-weight:600;font-size:13px;">${m?m.MachineName:a.MachineID} — ${a.AlertType}</div>
@@ -83,7 +83,7 @@ function renderAlerts(el) {
     <div style="font-size:11px;color:var(--text-muted);">${formatDateTime(a.AlertTimestamp)}</div></div>
     ${a.AcknowledgedBy?`<span class="badge bg-success badge-pill">Onaylandı</span>`:`<button class="btn btn-sm btn-accent" onclick="ackAlert('${a.AlertID}')"><i class="fas fa-check me-1"></i>Onayla</button>`}
     </div>`;
-  }).join('')}</div></div>`;
+  }).join('') : '<p class="text-muted mb-0">Bildirim yok.</p>'}</div></div>`;
 }
 
 async function ackAlert(id) {
@@ -91,7 +91,7 @@ async function ackAlert(id) {
   if(a){
     a.AcknowledgedBy=currentUser.UserID;
     a.AcknowledgementTimestamp=new Date().toISOString();
-    await supabase.from('notifications').update({ AcknowledgedBy: a.AcknowledgedBy, AcknowledgementTimestamp: a.AcknowledgementTimestamp }).eq('AlertID', id);
+    db.update('notifications', { AcknowledgedBy: a.AcknowledgedBy, AcknowledgementTimestamp: a.AcknowledgementTimestamp }, 'AlertID', id);
   }
   showToast('Alert onaylandı.');
   renderPage(currentPage);
@@ -129,7 +129,7 @@ async function submitProduction(e) {
     RuntimeHours:hours, EntryTimestamp:new Date().toISOString()
   };
   DEMO_PRODUCTION_RECORDS.push(newProd);
-  await supabase.from('production_data').insert([newProd]);
+  db.insert('production_data', [newProd]);
   showToast('Üretim verisi kaydedildi!');
   e.target.reset();
   document.getElementById('prodDate').valueAsDate = new Date();
@@ -189,7 +189,7 @@ async function submitWO(e) {
     Status:'Open', CreatedTimestamp:new Date().toISOString()
   };
   DEMO_WORK_ORDERS.push(newWo);
-  await supabase.from('work_orders').insert([newWo]);
+  db.insert('work_orders', [newWo]);
   bootstrap.Modal.getInstance(document.getElementById('woModal')).hide();
   showToast('İş emri oluşturuldu!');
   renderWorkOrders(document.getElementById('mainContent'));
