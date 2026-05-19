@@ -113,6 +113,21 @@ let DEMO_AUDIT_LOG = [];
 let RISK_SCORES = {};
 let OEE_TREND = [];
 
+// ─── Map Supabase user row to app format ──────────────────────────────
+function mapSupabaseUser(row) {
+  return {
+    UserID: row.id ? String(row.id) : row.UserID || '',
+    FullName: row.full_name || row.FullName || '',
+    Role: row.role || row.Role || '',
+    Department: row.department || row.Department || '',
+    Email: row.email || row.Email || '',
+    Phone: row.phone || row.Phone || '',
+    Password: row.password || row.Password || '',
+    AccountStatus: row.account_status || row.AccountStatus || 'Active',
+    CreatedTimestamp: row.created_at || row.CreatedTimestamp || ''
+  };
+}
+
 // ─── Load Data: try Supabase first, fall back to local ────────────────
 async function loadData() {
   let fromSupabase = false;
@@ -121,7 +136,7 @@ async function loadData() {
     // Attempt to load from Supabase with a 4-second timeout
     const results = await Promise.race([
       Promise.all([
-        db.select('technicians'),
+        db.select('users'),
         db.select('machines'),
         db.select('production_data'),
         db.select('maintenance_records'),
@@ -134,38 +149,35 @@ async function loadData() {
 
     const [users, machines, prodData, maintRecords, plans, alerts, failures] = results;
 
-    // Only use Supabase data if we got at least users and machines
-    if (users && users.length > 0 && machines && machines.length > 0) {
-      DEMO_USERS = users;
-      DEMO_MACHINES = machines;
-      DEMO_PRODUCTION_RECORDS = prodData || [];
-      DEMO_MAINTENANCE_LOGS = maintRecords || [];
-      DEMO_MAINTENANCE_PLANS = plans || [];
-      DEMO_ALERTS = alerts || [];
-      fromSupabase = true;
+    // Only use Supabase data if we got at least users
+    if (users && users.length > 0) {
+      DEMO_USERS = users.map(mapSupabaseUser);
       supabaseConnected = true;
-      console.log('✅ Data loaded from Supabase');
+      fromSupabase = true;
+      console.log('✅ Users loaded from Supabase (' + users.length + ' users)');
     }
+    if (machines && machines.length > 0) {
+      DEMO_MACHINES = machines;
+    }
+    if (prodData && prodData.length > 0) DEMO_PRODUCTION_RECORDS = prodData;
+    if (maintRecords && maintRecords.length > 0) DEMO_MAINTENANCE_LOGS = maintRecords;
+    if (plans && plans.length > 0) DEMO_MAINTENANCE_PLANS = plans;
+    if (alerts && alerts.length > 0) DEMO_ALERTS = alerts;
   } catch (e) {
     console.warn('⚠️ Supabase unavailable, using local data:', e.message);
   }
 
-  // Fallback to local demo data
-  if (!fromSupabase) {
-    DEMO_USERS = JSON.parse(JSON.stringify(LOCAL_USERS));
-    DEMO_MACHINES = JSON.parse(JSON.stringify(LOCAL_MACHINES));
-    DEMO_PRODUCTION_RECORDS = JSON.parse(JSON.stringify(LOCAL_PRODUCTION_RECORDS));
-    DEMO_MAINTENANCE_PLANS = JSON.parse(JSON.stringify(LOCAL_MAINTENANCE_PLANS));
-    DEMO_WORK_ORDERS = JSON.parse(JSON.stringify(LOCAL_WORK_ORDERS));
-    DEMO_MAINTENANCE_LOGS = JSON.parse(JSON.stringify(LOCAL_MAINTENANCE_LOGS));
-    DEMO_ALERTS = JSON.parse(JSON.stringify(LOCAL_ALERTS));
-    DEMO_AUDIT_LOG = JSON.parse(JSON.stringify(LOCAL_AUDIT_LOG));
-    console.log('📦 Using local demo data');
-  }
-
-  // If work orders are empty (Supabase didn't have them), use local
+  // Fallback: fill any empty arrays with local demo data
+  if (!DEMO_USERS.length) DEMO_USERS = JSON.parse(JSON.stringify(LOCAL_USERS));
+  if (!DEMO_MACHINES.length) DEMO_MACHINES = JSON.parse(JSON.stringify(LOCAL_MACHINES));
+  if (!DEMO_PRODUCTION_RECORDS.length) DEMO_PRODUCTION_RECORDS = JSON.parse(JSON.stringify(LOCAL_PRODUCTION_RECORDS));
+  if (!DEMO_MAINTENANCE_PLANS.length) DEMO_MAINTENANCE_PLANS = JSON.parse(JSON.stringify(LOCAL_MAINTENANCE_PLANS));
   if (!DEMO_WORK_ORDERS.length) DEMO_WORK_ORDERS = JSON.parse(JSON.stringify(LOCAL_WORK_ORDERS));
+  if (!DEMO_MAINTENANCE_LOGS.length) DEMO_MAINTENANCE_LOGS = JSON.parse(JSON.stringify(LOCAL_MAINTENANCE_LOGS));
+  if (!DEMO_ALERTS.length) DEMO_ALERTS = JSON.parse(JSON.stringify(LOCAL_ALERTS));
   if (!DEMO_AUDIT_LOG.length) DEMO_AUDIT_LOG = JSON.parse(JSON.stringify(LOCAL_AUDIT_LOG));
+
+  if (!fromSupabase) console.log('📦 Using local demo data');
 
   // Compute derived data
   RISK_SCORES = calculateRiskScores();

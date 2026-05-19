@@ -77,23 +77,49 @@
       document.getElementById('loadingIndicator').style.display = 'none';
       document.getElementById('loginForm').style.display = 'block';
 
-      document.getElementById('loginForm').addEventListener('submit', function(e) {
+      document.getElementById('loginForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         const email = document.getElementById('loginEmail').value.trim();
         const password = document.getElementById('loginPassword').value;
         const errEl = document.getElementById('loginError');
+        errEl.classList.add('d-none');
 
-        const user = getUserByEmail(email);
-        if (!user || user.Password !== password) {
+        let user = null;
+
+        // 1) Try direct Supabase query against "users" table
+        if (supabaseClient) {
+          try {
+            const { data, error } = await supabaseClient
+              .from('users')
+              .select('*')
+              .eq('email', email)
+              .eq('password', password)
+              .maybeSingle();
+
+            if (!error && data) {
+              user = mapSupabaseUser(data);
+              console.log('✅ Authenticated via Supabase users table');
+            }
+          } catch (err) {
+            console.warn('Supabase login query failed, trying local:', err.message);
+          }
+        }
+
+        // 2) Fallback: check against loaded DEMO_USERS
+        if (!user) {
+          const localUser = getUserByEmail(email);
+          if (localUser && localUser.Password === password) {
+            user = localUser;
+            console.log('📦 Authenticated via local data');
+          }
+        }
+
+        if (!user) {
           errEl.classList.remove('d-none');
           errEl.textContent = 'Geçersiz e-posta veya şifre.';
           return;
         }
-        if (user.AccountStatus !== 'Active') {
-          errEl.classList.remove('d-none');
-          errEl.textContent = 'Bu hesap aktif değil.';
-          return;
-        }
+
         sessionStorage.setItem('pmdss_user', JSON.stringify(user));
         window.location.href = 'dashboard.html';
       });
