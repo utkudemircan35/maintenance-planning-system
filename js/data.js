@@ -50,24 +50,83 @@ async function loadData() {
       DEMO_USERS = users.map(mapSupabaseUser);
       supabaseConnected = true;
       console.log('✅ Users loaded from Supabase (' + users.length + ' users)');
-    } else {
-      DEMO_USERS = [];
-    }
-    DEMO_MACHINES = machines || [];
-    DEMO_PRODUCTION_RECORDS = prodData || [];
-    DEMO_MAINTENANCE_LOGS = maintRecords || [];
-    DEMO_MAINTENANCE_PLANS = plans || [];
-    DEMO_ALERTS = alerts || [];
-    DEMO_WORK_ORDERS = workOrders || [];
-    DEMO_AUDIT_LOG = auditLog || [];
+    } else { DEMO_USERS = []; }
+
+    DEMO_MACHINES = (machines || []).map(m => ({
+      MachineID: m.machine_code || String(m.id),
+      MachineName: m.machine_name,
+      Location: m.location,
+      Criticality: m.criticality,
+      RiskScore: m.risk_score,
+      Status: m.status,
+      OEE: m.oee,
+      MTBF: m.mtbf,
+      MTTR: m.mttr,
+      LastMaintenanceDate: m.installation_date
+    }));
+
+    DEMO_ALERTS = (alerts || []).map(a => ({
+      AlertID: String(a.id),
+      MachineID: String(a.machine_id),
+      AlertType: a.alert_type,
+      SeverityLevel: a.alert_type === 'critical' ? 'Critical' : a.alert_type === 'warning' ? 'High' : 'Medium',
+      AlertTimestamp: a.alert_date,
+      AlertMessage: a.alert_message,
+      AcknowledgedBy: a.is_read ? 'system' : null
+    }));
+
+    DEMO_MAINTENANCE_PLANS = (plans || []).map(p => ({
+      PlanID: String(p.id),
+      MachineID: String(p.machine_id),
+      MaintenanceType: p.priority || 'Preventive',
+      PlannedDate: p.planned_date,
+      Status: p.status,
+      Recommendation: p.recommendation,
+      CreatedBy: 'Sistem'
+    }));
+
+    DEMO_MAINTENANCE_LOGS = (maintRecords || []).map(r => ({
+      LogID: String(r.id),
+      MachineID: String(r.machine_id),
+      MaintenanceType: r.maintenance_type,
+      Duration: r.duration_hours,
+      Description: r.description,
+      MaintenanceDate: r.maintenance_date,
+      TechnicianID: String(r.technician_id)
+    }));
+
+    DEMO_WORK_ORDERS = (workOrders || []).map(w => ({
+      WorkOrderID: w.id,
+      MachineID: String(w.machine_id),
+      MachineName: w.machine_name,
+      AssignedTo: w.technician,
+      Priority: w.priority,
+      PlannedDate: w.date,
+      Status: w.status
+    }));
+
+    DEMO_PRODUCTION_RECORDS = (prodData || []).map(p => ({
+      MachineID: String(p.machine_id),
+      ProductionDate: p.production_date,
+      RuntimeHours: p.runtime_hours,
+      CapacityUtilizationRate: p.capacity_usage,
+      ProductionQuantity: p.production_quantity
+    }));
+
+    DEMO_AUDIT_LOG = (auditLog || []).map(a => ({
+      UserName: a.user_name,
+      Action: a.action,
+      Timestamp: a.created_at
+    }));
+
   } catch (e) {
     console.warn('⚠️ Supabase unavailable:', e.message);
   }
 
-  // Compute derived data
   RISK_SCORES = calculateRiskScores();
   OEE_TREND = generateOEEData();
 }
+
 
 // ─── Risk Score Calculation ───────────────────────────────────────────
 function calculateRiskScores() {
@@ -75,7 +134,7 @@ function calculateRiskScores() {
   DEMO_MACHINES.forEach(m => {
     const records = DEMO_PRODUCTION_RECORDS.filter(r => r.MachineID === m.MachineID);
     const last3 = records.slice(-3);
-    const avgUtil = last3.length ? last3.reduce((s,r) => s + r.CapacityUtilizationRate, 0) / last3.length : 50;
+    const avgUtil = last3.length ? last3.reduce((s, r) => s + r.CapacityUtilizationRate, 0) / last3.length : 50;
     const lastMaint = new Date(m.LastMaintenanceDate || Date.now());
     const hoursSince = (Date.now() - lastMaint) / 3600000;
     const threshold = 720;
@@ -118,11 +177,11 @@ function getMachineById(id) { return DEMO_MACHINES.find(m => m.MachineID === id)
 function getRiskColor(score) { return score >= 85 ? '#ef4444' : score >= 60 ? '#eab308' : '#22c55e'; }
 function getRiskLabel(score) { return score >= 85 ? 'Kritik' : score >= 60 ? 'Uyarı' : 'Normal'; }
 function getPriorityBadge(p) {
-  const map = { Critical:'danger', High:'warning', Medium:'info', Low:'secondary' };
+  const map = { Critical: 'danger', High: 'warning', Medium: 'info', Low: 'secondary' };
   return map[p] || 'secondary';
 }
 function getStatusBadge(s) {
-  const map = { Open:'primary', 'In Progress':'warning', Completed:'success', Cancelled:'secondary', Pending:'info', Approved:'success', Postponed:'dark' };
+  const map = { Open: 'primary', 'In Progress': 'warning', Completed: 'success', Cancelled: 'secondary', Pending: 'info', Approved: 'success', Postponed: 'dark' };
   return map[s] || 'secondary';
 }
 function formatDate(d) {
