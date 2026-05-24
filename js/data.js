@@ -14,21 +14,6 @@ let DEMO_AUDIT_LOG = [];
 let RISK_SCORES = {};
 let OEE_TREND = [];
 
-// ─── Map Supabase user row to app format ──────────────────────────────
-function mapSupabaseUser(row) {
-  return {
-    UserID: row.id ? String(row.id) : row.UserID || '',
-    FullName: row.full_name || row.FullName || '',
-    Role: row.role || row.Role || '',
-    Department: row.department || row.Department || '',
-    Email: row.email || row.Email || '',
-    Phone: row.phone || row.Phone || '',
-    Password: row.password || row.Password || '',
-    AccountStatus: row.account_status || row.AccountStatus || 'Active',
-    CreatedTimestamp: row.created_at || row.CreatedTimestamp || ''
-  };
-}
-
 // ─── Load Data: try Supabase first ────────────────
 async function loadData() {
   try {
@@ -47,77 +32,18 @@ async function loadData() {
     const [users, machines, prodData, maintRecords, plans, alerts, failures, workOrders, auditLog] = results;
 
     if (users) {
-      DEMO_USERS = users.map(mapSupabaseUser);
+      DEMO_USERS = users;
       supabaseConnected = true;
       console.log('✅ Users loaded from Supabase (' + users.length + ' users)');
     } else { DEMO_USERS = []; }
 
-    DEMO_MACHINES = (machines || []).map(m => ({
-      MachineID: m.machine_code || String(m.id),
-      MachineName: m.machine_name,
-      Location: m.location,
-      Criticality: m.criticality,
-      RiskScore: m.risk_score,
-      Status: m.status,
-      OEE: m.oee,
-      MTBF: m.mtbf,
-      MTTR: m.mttr,
-      LastMaintenanceDate: m.installation_date
-    }));
-
-    DEMO_ALERTS = (alerts || []).map(a => ({
-      AlertID: String(a.id),
-      MachineID: String(a.machine_id),
-      AlertType: a.alert_type,
-      SeverityLevel: a.alert_type === 'critical' ? 'Critical' : a.alert_type === 'warning' ? 'High' : 'Medium',
-      AlertTimestamp: a.alert_date,
-      AlertMessage: a.alert_message,
-      AcknowledgedBy: a.is_read ? 'system' : null
-    }));
-
-    DEMO_MAINTENANCE_PLANS = (plans || []).map(p => ({
-      PlanID: String(p.id),
-      MachineID: String(p.machine_id),
-      MaintenanceType: p.priority || 'Preventive',
-      PlannedDate: p.planned_date,
-      Status: p.status,
-      Recommendation: p.recommendation,
-      CreatedBy: 'Sistem'
-    }));
-
-    DEMO_MAINTENANCE_LOGS = (maintRecords || []).map(r => ({
-      LogID: String(r.id),
-      MachineID: String(r.machine_id),
-      MaintenanceType: r.maintenance_type,
-      Duration: r.duration_hours,
-      Description: r.description,
-      MaintenanceDate: r.maintenance_date,
-      TechnicianID: String(r.technician_id)
-    }));
-
-    DEMO_WORK_ORDERS = (workOrders || []).map(w => ({
-      WorkOrderID: w.id,
-      MachineID: String(w.machine_id),
-      MachineName: w.machine_name,
-      AssignedTo: w.technician,
-      Priority: w.priority,
-      PlannedDate: w.date,
-      Status: w.status
-    }));
-
-    DEMO_PRODUCTION_RECORDS = (prodData || []).map(p => ({
-      MachineID: String(p.machine_id),
-      ProductionDate: p.production_date,
-      RuntimeHours: p.runtime_hours,
-      CapacityUtilizationRate: p.capacity_usage,
-      ProductionQuantity: p.production_quantity
-    }));
-
-    DEMO_AUDIT_LOG = (auditLog || []).map(a => ({
-      UserName: a.user_name,
-      Action: a.action,
-      Timestamp: a.created_at
-    }));
+    DEMO_MACHINES = machines || [];
+    DEMO_ALERTS = alerts || [];
+    DEMO_MAINTENANCE_PLANS = plans || [];
+    DEMO_MAINTENANCE_LOGS = maintRecords || [];
+    DEMO_WORK_ORDERS = workOrders || [];
+    DEMO_PRODUCTION_RECORDS = prodData || [];
+    DEMO_AUDIT_LOG = auditLog || [];
 
   } catch (e) {
     console.warn('⚠️ Supabase unavailable:', e.message);
@@ -132,27 +58,27 @@ async function loadData() {
 function calculateRiskScores() {
   const scores = {};
   DEMO_MACHINES.forEach(m => {
-    const records = DEMO_PRODUCTION_RECORDS.filter(r => r.MachineID === m.MachineID);
+    const records = DEMO_PRODUCTION_RECORDS.filter(r => r.machine_id == m.id);
     const last3 = records.slice(-3);
-    const avgUtil = last3.length ? last3.reduce((s, r) => s + r.CapacityUtilizationRate, 0) / last3.length : 50;
-    const lastMaint = new Date(m.LastMaintenanceDate || Date.now());
+    const avgUtil = last3.length ? last3.reduce((s, r) => s + r.capacity_usage, 0) / last3.length : 50;
+    const lastMaint = new Date(m.installation_date || Date.now());
     const hoursSince = (Date.now() - lastMaint) / 3600000;
     const threshold = 720;
     const normRuntime = Math.min(hoursSince / threshold, 1.5);
-    const corrLogs = DEMO_MAINTENANCE_LOGS.filter(l => l.MachineID === m.MachineID && l.MaintenanceType === 'Corrective').length;
+    const corrLogs = DEMO_MAINTENANCE_LOGS.filter(l => l.machine_id == m.id && l.maintenance_type === 'Corrective').length;
     const normFailure = Math.min(corrLogs / 3, 1);
     let score = (0.40 * avgUtil) + (0.35 * normRuntime * 100) + (0.25 * normFailure * 100);
     score = Math.min(100, Math.max(0, score));
     // Override for demo realism
-    if (m.MachineID === 'MCH-001') score = 91;
-    if (m.MachineID === 'MCH-006') score = 88;
-    if (m.MachineID === 'MCH-004') score = 78;
-    if (m.MachineID === 'MCH-002') score = 65;
-    if (m.MachineID === 'MCH-003') score = 45;
-    if (m.MachineID === 'MCH-005') score = 38;
-    if (m.MachineID === 'MCH-007') score = 52;
-    if (m.MachineID === 'MCH-008') score = 22;
-    scores[m.MachineID] = +score.toFixed(1);
+    if (m.machine_code === 'MCH-001') score = 91;
+    if (m.machine_code === 'MCH-006') score = 88;
+    if (m.machine_code === 'MCH-004') score = 78;
+    if (m.machine_code === 'MCH-002') score = 65;
+    if (m.machine_code === 'MCH-003') score = 45;
+    if (m.machine_code === 'MCH-005') score = 38;
+    if (m.machine_code === 'MCH-007') score = 52;
+    if (m.machine_code === 'MCH-008') score = 22;
+    scores[m.id] = +score.toFixed(1);
   });
   return scores;
 }
@@ -171,9 +97,9 @@ function generateOEEData() {
 }
 
 // ─── Helper Functions ─────────────────────────────────────────────────
-function getUserByEmail(email) { return DEMO_USERS.find(u => u.Email === email); }
-function getUserById(id) { return DEMO_USERS.find(u => u.UserID === id); }
-function getMachineById(id) { return DEMO_MACHINES.find(m => m.MachineID === id); }
+function getUserByEmail(email) { return DEMO_USERS.find(u => u.email === email); }
+function getUserById(id) { return DEMO_USERS.find(u => String(u.id) === String(id)); }
+function getMachineById(id) { return DEMO_MACHINES.find(m => String(m.id) === String(id) || m.machine_code === id); }
 function getRiskColor(score) { return score >= 85 ? '#ef4444' : score >= 60 ? '#eab308' : '#22c55e'; }
 function getRiskLabel(score) { return score >= 85 ? 'Kritik' : score >= 60 ? 'Uyarı' : 'Normal'; }
 function getPriorityBadge(p) {

@@ -23,7 +23,7 @@ function toggleSidebar() {
 }
 
 function getMenuItems() {
-  const r = currentUser.Role;
+  const r = currentUser.role;
   const items = [];
   if (r === 'Production Manager') {
     items.push({ id:'dashboard', icon:'fa-gauge-high', label:'Dashboard' });
@@ -54,7 +54,7 @@ function getMenuItems() {
 
 function renderSidebar() {
   const menu = getMenuItems();
-  const initials = currentUser.FullName.split(' ').map(n=>n[0]).join('');
+  const initials = currentUser.full_name.split(' ').map(n=>n[0]).join('');
   document.getElementById('sidebar').innerHTML = `
     <div class="sidebar-brand">
       <div class="brand-icon"><i class="fas fa-industry"></i></div>
@@ -68,8 +68,8 @@ function renderSidebar() {
       <div class="sidebar-user">
         <div class="avatar">${initials}</div>
         <div class="user-info">
-          <div class="user-name">${currentUser.FullName}</div>
-          <div class="user-role">${currentUser.Role}</div>
+          <div class="user-name">${currentUser.full_name}</div>
+          <div class="user-role">${currentUser.role}</div>
         </div>
         <button onclick="logout()" class="btn-icon" style="border:none;background:none;color:rgba(255,255,255,.5);"><i class="fas fa-right-from-bracket"></i></button>
       </div>
@@ -77,14 +77,14 @@ function renderSidebar() {
 }
 
 function renderTopbar() {
-  const unack = DEMO_ALERTS.filter(a => !a.AcknowledgedBy).length;
+  const unack = DEMO_ALERTS.filter(a => !a.is_read).length;
   document.getElementById('topbar').innerHTML = `
     <div class="topbar-left">
       <button class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
       <h4 id="pageTitle">Dashboard</h4>
     </div>
     <div class="topbar-right">
-      <button class="btn-icon" onclick="navigateTo('${currentUser.Role==='Technician'?'alerts':'alert-mgmt'}')" title="Bildirimler">
+      <button class="btn-icon" onclick="navigateTo('${currentUser.role==='Technician'?'alerts':'alert-mgmt'}')" title="Bildirimler">
         <i class="fas fa-bell"></i>
         ${unack > 0 ? `<span class="notification-badge">${unack}</span>` : ''}
       </button>
@@ -112,7 +112,7 @@ async function renderPage(page) {
   const main = document.getElementById('mainContent');
   main.innerHTML = '<div class="text-center p-5"><i class="fas fa-spinner fa-spin fa-2x" style="color:var(--accent)"></i><p class="mt-2">Yükleniyor...</p></div>';
   await loadData();
-  const r = currentUser.Role;
+  const r = currentUser.role;
   if (page === 'dashboard') {
     if (r === 'Production Manager') renderPMDashboard(main);
     else if (r === 'Technician') renderTechWO(main);

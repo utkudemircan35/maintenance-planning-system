@@ -1,0 +1,1002 @@
+[
+    {
+        "table_name": "alerts",
+        "column_name": "id",
+        "data_type": "text",
+        "is_nullable": "NO",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": "PRIMARY KEY",
+        "constraint_name": "alerts_pkey"
+    },
+    {
+        "table_name": "alerts",
+        "column_name": "machine_id",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "alerts",
+        "column_name": "machine_name",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "alerts",
+        "column_name": "type",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "alerts",
+        "column_name": "severity",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "alerts",
+        "column_name": "value",
+        "data_type": "numeric",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "alerts",
+        "column_name": "date",
+        "data_type": "timestamp without time zone",
+        "is_nullable": "YES",
+        "column_default": "now()",
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "alerts",
+        "column_name": "status",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "column_default": "'Bekliyor'::text",
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "audit_log",
+        "column_name": "id",
+        "data_type": "integer",
+        "is_nullable": "NO",
+        "column_default": "nextval('audit_log_id_seq'::regclass)",
+        "character_maximum_length": null,
+        "constraint_type": "PRIMARY KEY",
+        "constraint_name": "audit_log_pkey"
+    },
+    {
+        "table_name": "audit_log",
+        "column_name": "user_name",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "audit_log",
+        "column_name": "action",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "audit_log",
+        "column_name": "created_at",
+        "data_type": "timestamp without time zone",
+        "is_nullable": "YES",
+        "column_default": "now()",
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "failure_records",
+        "column_name": "id",
+        "data_type": "bigint",
+        "is_nullable": "NO",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": "PRIMARY KEY",
+        "constraint_name": "failure_records_pkey"
+    },
+    {
+        "table_name": "failure_records",
+        "column_name": "machine_id",
+        "data_type": "bigint",
+        "is_nullable": "NO",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": "FOREIGN KEY",
+        "constraint_name": "failure_records_machine_id_fkey"
+    },
+    {
+        "table_name": "failure_records",
+        "column_name": "failure_date",
+        "data_type": "date",
+        "is_nullable": "NO",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "failure_records",
+        "column_name": "failure_type",
+        "data_type": "character varying",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": 100,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "failure_records",
+        "column_name": "downtime_hours",
+        "data_type": "numeric",
+        "is_nullable": "YES",
+        "column_default": "0",
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "failure_records",
+        "column_name": "description",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "failure_records",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "is_nullable": "YES",
+        "column_default": "now()",
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "machines",
+        "column_name": "id",
+        "data_type": "bigint",
+        "is_nullable": "NO",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": "PRIMARY KEY",
+        "constraint_name": "machines_pkey"
+    },
+    {
+        "table_name": "machines",
+        "column_name": "machine_code",
+        "data_type": "character varying",
+        "is_nullable": "NO",
+        "column_default": null,
+        "character_maximum_length": 50,
+        "constraint_type": "UNIQUE",
+        "constraint_name": "machines_machine_code_key"
+    },
+    {
+        "table_name": "machines",
+        "column_name": "machine_name",
+        "data_type": "character varying",
+        "is_nullable": "NO",
+        "column_default": null,
+        "character_maximum_length": 150,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "machines",
+        "column_name": "status",
+        "data_type": "character varying",
+        "is_nullable": "NO",
+        "column_default": "'active'::character varying",
+        "character_maximum_length": 50,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "machines",
+        "column_name": "installation_date",
+        "data_type": "date",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "machines",
+        "column_name": "location",
+        "data_type": "character varying",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": 150,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "machines",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "is_nullable": "YES",
+        "column_default": "now()",
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "machines",
+        "column_name": "criticality",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "machines",
+        "column_name": "risk_score",
+        "data_type": "integer",
+        "is_nullable": "YES",
+        "column_default": "0",
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "machines",
+        "column_name": "oee",
+        "data_type": "numeric",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "machines",
+        "column_name": "mtbf",
+        "data_type": "numeric",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "machines",
+        "column_name": "mttr",
+        "data_type": "numeric",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "maintenance_logs",
+        "column_name": "id",
+        "data_type": "text",
+        "is_nullable": "NO",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": "PRIMARY KEY",
+        "constraint_name": "maintenance_logs_pkey"
+    },
+    {
+        "table_name": "maintenance_logs",
+        "column_name": "work_order_id",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "maintenance_logs",
+        "column_name": "machine_name",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "maintenance_logs",
+        "column_name": "type",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "maintenance_logs",
+        "column_name": "duration",
+        "data_type": "numeric",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "maintenance_logs",
+        "column_name": "result",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "maintenance_logs",
+        "column_name": "notes",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "maintenance_logs",
+        "column_name": "date",
+        "data_type": "timestamp without time zone",
+        "is_nullable": "YES",
+        "column_default": "now()",
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "maintenance_logs",
+        "column_name": "technician",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "maintenance_plans",
+        "column_name": "id",
+        "data_type": "text",
+        "is_nullable": "NO",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": "PRIMARY KEY",
+        "constraint_name": "maintenance_plans_pkey"
+    },
+    {
+        "table_name": "maintenance_plans",
+        "column_name": "machine_id",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "maintenance_plans",
+        "column_name": "machine_name",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "maintenance_plans",
+        "column_name": "type",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "maintenance_plans",
+        "column_name": "risk_score",
+        "data_type": "integer",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "maintenance_plans",
+        "column_name": "planned_date",
+        "data_type": "date",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "maintenance_plans",
+        "column_name": "status",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "column_default": "'Pending'::text",
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "maintenance_plans",
+        "column_name": "created_by",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "column_default": "'Sistem'::text",
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "maintenance_records",
+        "column_name": "id",
+        "data_type": "bigint",
+        "is_nullable": "NO",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": "PRIMARY KEY",
+        "constraint_name": "maintenance_records_pkey"
+    },
+    {
+        "table_name": "maintenance_records",
+        "column_name": "machine_id",
+        "data_type": "bigint",
+        "is_nullable": "NO",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": "FOREIGN KEY",
+        "constraint_name": "maintenance_records_machine_id_fkey"
+    },
+    {
+        "table_name": "maintenance_records",
+        "column_name": "technician_id",
+        "data_type": "bigint",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": "FOREIGN KEY",
+        "constraint_name": "maintenance_records_technician_id_fkey"
+    },
+    {
+        "table_name": "maintenance_records",
+        "column_name": "maintenance_date",
+        "data_type": "date",
+        "is_nullable": "NO",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "maintenance_records",
+        "column_name": "maintenance_type",
+        "data_type": "character varying",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": 100,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "maintenance_records",
+        "column_name": "description",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "maintenance_records",
+        "column_name": "duration_hours",
+        "data_type": "numeric",
+        "is_nullable": "YES",
+        "column_default": "0",
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "maintenance_records",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "is_nullable": "YES",
+        "column_default": "now()",
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "maintenance_schedules",
+        "column_name": "id",
+        "data_type": "bigint",
+        "is_nullable": "NO",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": "PRIMARY KEY",
+        "constraint_name": "maintenance_schedules_pkey"
+    },
+    {
+        "table_name": "maintenance_schedules",
+        "column_name": "machine_id",
+        "data_type": "bigint",
+        "is_nullable": "NO",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": "FOREIGN KEY",
+        "constraint_name": "maintenance_schedules_machine_id_fkey"
+    },
+    {
+        "table_name": "maintenance_schedules",
+        "column_name": "planned_date",
+        "data_type": "date",
+        "is_nullable": "NO",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "maintenance_schedules",
+        "column_name": "priority",
+        "data_type": "character varying",
+        "is_nullable": "YES",
+        "column_default": "'normal'::character varying",
+        "character_maximum_length": 50,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "maintenance_schedules",
+        "column_name": "recommendation",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "maintenance_schedules",
+        "column_name": "status",
+        "data_type": "character varying",
+        "is_nullable": "YES",
+        "column_default": "'planned'::character varying",
+        "character_maximum_length": 50,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "maintenance_schedules",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "is_nullable": "YES",
+        "column_default": "now()",
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "notifications",
+        "column_name": "id",
+        "data_type": "bigint",
+        "is_nullable": "NO",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": "PRIMARY KEY",
+        "constraint_name": "notifications_pkey"
+    },
+    {
+        "table_name": "notifications",
+        "column_name": "machine_id",
+        "data_type": "bigint",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": "FOREIGN KEY",
+        "constraint_name": "notifications_machine_id_fkey"
+    },
+    {
+        "table_name": "notifications",
+        "column_name": "alert_type",
+        "data_type": "character varying",
+        "is_nullable": "NO",
+        "column_default": null,
+        "character_maximum_length": 100,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "notifications",
+        "column_name": "alert_message",
+        "data_type": "text",
+        "is_nullable": "NO",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "notifications",
+        "column_name": "alert_date",
+        "data_type": "timestamp with time zone",
+        "is_nullable": "YES",
+        "column_default": "now()",
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "notifications",
+        "column_name": "is_read",
+        "data_type": "boolean",
+        "is_nullable": "YES",
+        "column_default": "false",
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "production_data",
+        "column_name": "id",
+        "data_type": "bigint",
+        "is_nullable": "NO",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": "PRIMARY KEY",
+        "constraint_name": "production_data_pkey"
+    },
+    {
+        "table_name": "production_data",
+        "column_name": "machine_id",
+        "data_type": "bigint",
+        "is_nullable": "NO",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": "FOREIGN KEY",
+        "constraint_name": "production_data_machine_id_fkey"
+    },
+    {
+        "table_name": "production_data",
+        "column_name": "production_date",
+        "data_type": "date",
+        "is_nullable": "NO",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "production_data",
+        "column_name": "runtime_hours",
+        "data_type": "numeric",
+        "is_nullable": "NO",
+        "column_default": "0",
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "production_data",
+        "column_name": "capacity_usage",
+        "data_type": "numeric",
+        "is_nullable": "NO",
+        "column_default": "0",
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "production_data",
+        "column_name": "production_quantity",
+        "data_type": "integer",
+        "is_nullable": "NO",
+        "column_default": "0",
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "production_data",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "is_nullable": "YES",
+        "column_default": "now()",
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "technicians",
+        "column_name": "id",
+        "data_type": "bigint",
+        "is_nullable": "NO",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": "PRIMARY KEY",
+        "constraint_name": "technicians_pkey"
+    },
+    {
+        "table_name": "technicians",
+        "column_name": "technician_code",
+        "data_type": "character varying",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": 50,
+        "constraint_type": "UNIQUE",
+        "constraint_name": "technicians_technician_code_key"
+    },
+    {
+        "table_name": "technicians",
+        "column_name": "full_name",
+        "data_type": "character varying",
+        "is_nullable": "NO",
+        "column_default": null,
+        "character_maximum_length": 150,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "technicians",
+        "column_name": "department",
+        "data_type": "character varying",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": 100,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "technicians",
+        "column_name": "phone",
+        "data_type": "character varying",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": 30,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "technicians",
+        "column_name": "email",
+        "data_type": "character varying",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": 150,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "technicians",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "is_nullable": "YES",
+        "column_default": "now()",
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "test_table",
+        "column_name": "id",
+        "data_type": "bigint",
+        "is_nullable": "NO",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": "PRIMARY KEY",
+        "constraint_name": "test_table_pkey"
+    },
+    {
+        "table_name": "users",
+        "column_name": "id",
+        "data_type": "integer",
+        "is_nullable": "NO",
+        "column_default": "nextval('users_id_seq'::regclass)",
+        "character_maximum_length": null,
+        "constraint_type": "PRIMARY KEY",
+        "constraint_name": "users_pkey"
+    },
+    {
+        "table_name": "users",
+        "column_name": "id",
+        "data_type": "integer",
+        "is_nullable": "NO",
+        "column_default": "nextval('users_id_seq'::regclass)",
+        "character_maximum_length": null,
+        "constraint_type": "PRIMARY KEY",
+        "constraint_name": "users_pkey"
+    },
+    {
+        "table_name": "users",
+        "column_name": "id",
+        "data_type": "integer",
+        "is_nullable": "NO",
+        "column_default": "nextval('users_id_seq'::regclass)",
+        "character_maximum_length": null,
+        "constraint_type": "PRIMARY KEY",
+        "constraint_name": "users_pkey"
+    },
+    {
+        "table_name": "users",
+        "column_name": "id",
+        "data_type": "integer",
+        "is_nullable": "NO",
+        "column_default": "nextval('users_id_seq'::regclass)",
+        "character_maximum_length": null,
+        "constraint_type": "PRIMARY KEY",
+        "constraint_name": "users_pkey"
+    },
+    {
+        "table_name": "users",
+        "column_name": "email",
+        "data_type": "character varying",
+        "is_nullable": "NO",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "users",
+        "column_name": "password",
+        "data_type": "character varying",
+        "is_nullable": "NO",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "users",
+        "column_name": "role",
+        "data_type": "character varying",
+        "is_nullable": "NO",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "users",
+        "column_name": "full_name",
+        "data_type": "character varying",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "users",
+        "column_name": "status",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "column_default": "'Active'::text",
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "users",
+        "column_name": "department",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "work_orders",
+        "column_name": "id",
+        "data_type": "text",
+        "is_nullable": "NO",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": "PRIMARY KEY",
+        "constraint_name": "work_orders_pkey"
+    },
+    {
+        "table_name": "work_orders",
+        "column_name": "machine_id",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "work_orders",
+        "column_name": "machine_name",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "work_orders",
+        "column_name": "technician",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "work_orders",
+        "column_name": "priority",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    },
+    {
+        "table_name": "work_orders",
+        "column_name": "date",
+        "data_type": "date",
+        "is_nullable": "YES",
+        "column_default": null,
+        "character_maximum_length": null,
+        "constraint_type": null,
+        "constraint_name": null
+    }
+]

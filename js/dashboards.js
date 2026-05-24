@@ -2,8 +2,8 @@
 
 function renderPMDashboard(el) {
   const avgOEE = OEE_TREND.slice(-7).reduce((s,d)=>s+d.oee,0)/7;
-  const openWO = DEMO_WORK_ORDERS.filter(w=>w.Status==='Open'||w.Status==='In Progress').length;
-  const activeAlerts = DEMO_ALERTS.filter(a=>!a.AcknowledgedBy).length;
+  const openWO = DEMO_WORK_ORDERS.length;
+  const activeAlerts = DEMO_ALERTS.filter(a=>!a.is_read).length;
   const mtbf = 580;
 
   el.innerHTML = `
@@ -45,29 +45,30 @@ function renderPMDashboard(el) {
 }
 
 function renderAlertList() {
-  const alerts = DEMO_ALERTS.filter(a=>!a.AcknowledgedBy);
+  const alerts = DEMO_ALERTS.filter(a=>!a.is_read);
   if (!alerts.length) return '<p class="text-muted mb-0" style="font-size:13px;">Aktif alert yok.</p>';
   return alerts.map(a => {
-    const m = getMachineById(a.MachineID);
+    const m = getMachineById(a.machine_id);
+    const sev = a.alert_type === 'critical' ? 'Critical' : a.alert_type === 'warning' ? 'High' : 'Medium';
     return `<div class="alert-item">
-      <div class="alert-dot ${a.SeverityLevel.toLowerCase()}"></div>
+      <div class="alert-dot ${sev.toLowerCase()}"></div>
       <div style="flex:1;min-width:0;">
-        <div style="font-weight:600;font-size:13px;">${m?m.MachineName:a.MachineID}</div>
-        <div style="font-size:12px;color:var(--text-muted);">${a.AlertType}</div>
-        <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${formatDateTime(a.AlertTimestamp)}</div>
+        <div style="font-weight:600;font-size:13px;">${m?m.machine_name:a.machine_id}</div>
+        <div style="font-size:12px;color:var(--text-muted);">${a.alert_type}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${formatDateTime(a.alert_date)}</div>
       </div>
-      <span class="badge bg-${a.SeverityLevel==='Critical'?'danger':a.SeverityLevel==='High'?'warning':a.SeverityLevel==='Medium'?'info':'secondary'}" style="font-size:10px;">${a.SeverityLevel}</span>
+      <span class="badge bg-${sev==='Critical'?'danger':sev==='High'?'warning':sev==='Medium'?'info':'secondary'}" style="font-size:10px;">${sev}</span>
     </div>`;
   }).join('');
 }
 
 function renderRiskGrid() {
   return DEMO_MACHINES.map(m => {
-    const score = RISK_SCORES[m.MachineID];
+    const score = RISK_SCORES[m.id] || 0;
     const color = getRiskColor(score);
     const bg = score >= 85 ? 'linear-gradient(135deg,#dc2626,#ef4444)' : score >= 60 ? 'linear-gradient(135deg,#ca8a04,#eab308)' : 'linear-gradient(135deg,#16a34a,#22c55e)';
-    return `<div class="risk-cell" style="background:${bg};" title="${m.MachineName}">
-      <div class="machine-name">${m.MachineName}</div>
+    return `<div class="risk-cell" style="background:${bg};" title="${m.machine_name}">
+      <div class="machine-name">${m.machine_name}</div>
       <div class="risk-value">${score}</div>
       <div class="risk-status">${getRiskLabel(score)}</div>
     </div>`;
@@ -75,28 +76,29 @@ function renderRiskGrid() {
 }
 
 function renderPendingPlansTable() {
-  const pending = DEMO_MAINTENANCE_PLANS.filter(p => p.PlanStatus === 'Pending');
+  const pending = DEMO_MAINTENANCE_PLANS.filter(p => p.status === 'planned');
   if (!pending.length) return '<p class="text-muted mb-0">Bekleyen plan yok.</p>';
   return `<div class="table-responsive"><table class="table-modern"><thead><tr>
     <th>Plan ID</th><th>Makine</th><th>Tip</th><th>Risk</th><th>Önerilen Tarih</th><th>İşlem</th>
   </tr></thead><tbody>${pending.map(p => {
-    const m = getMachineById(p.MachineID);
+    const m = getMachineById(p.machine_id);
+    const risk = m ? RISK_SCORES[m.id] : 0;
     return `<tr>
-      <td><strong>${p.PlanID}</strong></td>
-      <td>${m?m.MachineName:p.MachineID}</td>
-      <td><span class="badge bg-${p.MaintenanceType==='Corrective'?'danger':p.MaintenanceType==='Predictive'?'info':'success'} badge-pill">${p.MaintenanceType}</span></td>
-      <td><span style="color:${getRiskColor(p.RiskScore)};font-weight:700;">${p.RiskScore}</span></td>
-      <td>${formatDate(p.RecommendedDate)}</td>
+      <td><strong>${p.id}</strong></td>
+      <td>${m?m.machine_name:p.machine_id}</td>
+      <td><span class="badge bg-${p.priority==='High'?'danger':p.priority==='Medium'?'info':'success'} badge-pill">${p.priority}</span></td>
+      <td><span style="color:${getRiskColor(risk)};font-weight:700;">${risk}</span></td>
+      <td>${formatDate(p.planned_date)}</td>
       <td>
-        <button class="btn btn-sm btn-accent me-1" onclick="approvePlan('${p.PlanID}')"><i class="fas fa-check"></i></button>
-        <button class="btn btn-sm btn-outline-secondary" onclick="postponePlan('${p.PlanID}')"><i class="fas fa-clock"></i></button>
+        <button class="btn btn-sm btn-accent me-1" onclick="approvePlan('${p.id}')"><i class="fas fa-check"></i></button>
+        <button class="btn btn-sm btn-outline-secondary" onclick="postponePlan('${p.id}')"><i class="fas fa-clock"></i></button>
       </td>
     </tr>`;
   }).join('')}</tbody></table></div>`;
 }
 
 async function approvePlan(id) {
-  const success = await db.update('maintenance_schedules', { PlanStatus: 'Approved', ApprovedBy: currentUser.UserID, ApprovalTimestamp: new Date().toISOString() }, 'PlanID', id);
+  const success = await db.update('maintenance_schedules', { status: 'approved' }, 'id', id);
   if (success) {
     showToast('Plan onaylandı: '+id);
     await renderPage(currentPage);
@@ -105,7 +107,7 @@ async function approvePlan(id) {
   }
 }
 async function postponePlan(id) {
-  const success = await db.update('maintenance_schedules', { PlanStatus: 'Postponed' }, 'PlanID', id);
+  const success = await db.update('maintenance_schedules', { status: 'postponed' }, 'id', id);
   if (success) {
     showToast('Plan ertelendi: '+id,'warning');
     await renderPage(currentPage);
@@ -143,7 +145,7 @@ function drawOEEChart() {
 // Executive Dashboard
 function renderExecDashboard(el) {
   const avgOEE = OEE_TREND.slice(-7).reduce((s,d)=>s+d.oee,0)/7;
-  const topRisk = DEMO_MACHINES.map(m=>({...m,risk:RISK_SCORES[m.MachineID]})).sort((a,b)=>b.risk-a.risk).slice(0,5);
+  const topRisk = DEMO_MACHINES.map(m=>({...m,risk:RISK_SCORES[m.id]})).sort((a,b)=>b.risk-a.risk).slice(0,5);
   const totalDowntime = 47.5;
   const totalMaint = DEMO_MAINTENANCE_LOGS.length;
 
@@ -163,7 +165,7 @@ function renderExecDashboard(el) {
     </div></div>
     <div class="col-6 col-lg-3 fade-in fade-in-delay-4"><div class="kpi-card">
       <div class="kpi-header"><div class="kpi-icon amber"><i class="fas fa-triangle-exclamation"></i></div></div>
-      <div class="kpi-value">${DEMO_ALERTS.filter(a=>!a.AcknowledgedBy).length}</div><div class="kpi-label">Aktif Alert</div>
+      <div class="kpi-value">${DEMO_ALERTS.filter(a=>!a.is_read).length}</div><div class="kpi-label">Aktif Alert</div>
     </div></div>
   </div>
 
@@ -172,10 +174,10 @@ function renderExecDashboard(el) {
     <div class="col-lg-8 fade-in"><div class="panel"><div class="panel-header"><h5><i class="fas fa-ranking-star me-2" style="color:var(--red)"></i>En Riskli 5 Makine</h5></div><div class="panel-body">
       <div class="table-responsive"><table class="table-modern"><thead><tr><th>Makine</th><th>Konum</th><th>Kritiklik</th><th>Risk Score</th><th>Durum</th></tr></thead><tbody>
       ${topRisk.map(m=>`<tr>
-        <td><strong>${m.MachineName}</strong></td><td>${m.Location}</td>
-        <td><span class="badge bg-${m.CriticalityLevel==='Critical'?'danger':m.CriticalityLevel==='High'?'warning':'secondary'} badge-pill">${m.CriticalityLevel}</span></td>
+        <td><strong>${m.machine_name}</strong></td><td>${m.location}</td>
+        <td><span class="badge bg-${m.criticality==='Critical'?'danger':m.criticality==='High'?'warning':'secondary'} badge-pill">${m.criticality}</span></td>
         <td><span style="color:${getRiskColor(m.risk)};font-weight:700;font-size:16px;">${m.risk}</span></td>
-        <td><span class="badge bg-${m.OperationalStatus==='Active'?'success':m.OperationalStatus==='Under Maintenance'?'warning':'secondary'} badge-pill">${m.OperationalStatus}</span></td>
+        <td><span class="badge bg-${m.status==='active'?'success':m.status==='Under Maintenance'?'warning':'secondary'} badge-pill">${m.status}</span></td>
       </tr>`).join('')}
       </tbody></table></div>
     </div></div></div>
@@ -220,7 +222,7 @@ function drawGaugeChart(val) {
 function drawScatterChart() {
   const ctx = document.getElementById('scatterChart');
   if(!ctx) return;
-  const data = DEMO_MACHINES.map(m=>({x: +(Math.random()*20+5).toFixed(1), y: +(Math.random()*15000+2000).toFixed(0)*1, label:m.MachineName}));
+  const data = DEMO_MACHINES.map(m=>({x: +(Math.random()*20+5).toFixed(1), y: +(Math.random()*15000+2000).toFixed(0)*1, label:m.machine_name}));
   new Chart(ctx, {
     type:'scatter',
     data:{ datasets:[{ data:data.map(d=>({x:d.x,y:d.y})), backgroundColor:'rgba(13,148,136,.6)', pointRadius:8, pointHoverRadius:11 }] },
@@ -250,7 +252,7 @@ function drawExecOEEChart() {
 
 // Maintenance Manager Dashboard
 function renderMMDashboard(el) {
-  const openWO = DEMO_WORK_ORDERS.filter(w=>w.Status!=='Completed'&&w.Status!=='Cancelled').length;
+  const openWO = DEMO_WORK_ORDERS.length;
   const avgRisk = Object.values(RISK_SCORES).reduce((s,v)=>s+v,0)/Object.values(RISK_SCORES).length;
 
   el.innerHTML = `
@@ -265,9 +267,9 @@ function renderMMDashboard(el) {
     <div class="col-lg-5 fade-in"><div class="panel"><div class="panel-header"><h5><i class="fas fa-bell me-2" style="color:var(--red)"></i>Aktif Alertler</h5></div><div class="panel-body">${renderAlertList()}</div></div></div>
   </div>
   <div class="row g-3">
-    <div class="col-12 fade-in"><div class="panel"><div class="panel-header"><h5><i class="fas fa-file-lines me-2" style="color:var(--accent)"></i>Açık İş Emirleri</h5>
+    <div class="col-12 fade-in"><div class="panel"><div class="panel-header"><h5><i class="fas fa-file-lines me-2" style="color:var(--accent)"></i>Tüm İş Emirleri</h5>
       <button class="btn btn-accent btn-sm" onclick="navigateTo('work-orders')">Tümünü Gör</button></div>
-      <div class="panel-body">${renderWOTable(DEMO_WORK_ORDERS.filter(w=>w.Status!=='Completed'&&w.Status!=='Cancelled'))}</div></div></div>
+      <div class="panel-body">${renderWOTable(DEMO_WORK_ORDERS)}</div></div></div>
   </div>`;
 
   setTimeout(drawMTBFChart, 100);
@@ -301,7 +303,7 @@ function drawMTBFChart() {
 
 // Admin Dashboard
 function renderAdminDashboard(el) {
-  const active = DEMO_USERS.filter(u=>u.AccountStatus==='Active').length;
+  const active = DEMO_USERS.filter(u=>u.status==='Active').length;
   const total = DEMO_USERS.length;
   el.innerHTML = `
   <div class="row g-3 mb-4">
@@ -312,15 +314,15 @@ function renderAdminDashboard(el) {
   </div>
   <div class="row g-3">
     <div class="col-lg-6 fade-in"><div class="panel"><div class="panel-header"><h5>Son Aktiviteler</h5></div><div class="panel-body">${DEMO_AUDIT_LOG.slice(-5).reverse().map(l=>{
-      const u=getUserById(l.userId);
-      return `<div class="alert-item"><div class="alert-dot" style="background:var(--accent);"></div><div><div style="font-weight:600;font-size:13px;">${u?u.FullName:l.userId}</div><div style="font-size:12px;color:var(--text-muted);">${l.action}</div><div style="font-size:11px;color:var(--text-muted);">${formatDateTime(l.timestamp)}</div></div></div>`;
+      const u=DEMO_USERS.find(x=>x.full_name===l.user_name || x.id===l.user_name);
+      return `<div class="alert-item"><div class="alert-dot" style="background:var(--accent);"></div><div><div style="font-weight:600;font-size:13px;">${u?u.full_name:l.user_name}</div><div style="font-size:12px;color:var(--text-muted);">${l.action}</div><div style="font-size:11px;color:var(--text-muted);">${formatDateTime(l.created_at)}</div></div></div>`;
     }).join('')}</div></div></div>
     <div class="col-lg-6 fade-in"><div class="panel"><div class="panel-header"><h5>Rol Dağılımı</h5></div><div class="panel-body"><div class="chart-container" style="min-height:200px;"><canvas id="roleChart"></canvas></div></div></div></div>
   </div>`;
   setTimeout(()=>{
     const ctx=document.getElementById('roleChart');if(!ctx)return;
     const roles=['Admin','Production Manager','Maintenance Manager','Technician','Senior Management'];
-    const counts=roles.map(r=>DEMO_USERS.filter(u=>u.Role===r).length);
+    const counts=roles.map(r=>DEMO_USERS.filter(u=>u.role===r).length);
     new Chart(ctx,{type:'doughnut',data:{labels:roles,datasets:[{data:counts,backgroundColor:['#0d9488','#3b82f6','#eab308','#8b5cf6','#ef4444'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{position:'bottom',labels:{font:{size:11},usePointStyle:true}}}}});
   },100);
 }
