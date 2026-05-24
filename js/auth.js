@@ -108,8 +108,10 @@ function navigateTo(page) {
   renderPage(page);
 }
 
-function renderPage(page) {
+async function renderPage(page) {
   const main = document.getElementById('mainContent');
+  main.innerHTML = '<div class="text-center p-5"><i class="fas fa-spinner fa-spin fa-2x" style="color:var(--accent)"></i><p class="mt-2">Yükleniyor...</p></div>';
+  await loadData();
   const r = currentUser.Role;
   if (page === 'dashboard') {
     if (r === 'Production Manager') renderPMDashboard(main);

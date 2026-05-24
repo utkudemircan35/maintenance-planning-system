@@ -17,13 +17,13 @@ function renderTechWO(el) {
 }
 
 async function startWO(id) {
-  const w = DEMO_WORK_ORDERS.find(x=>x.WOID===id);
-  if(w) {
-    w.Status = 'In Progress';
-    db.update('work_orders', { Status: 'In Progress' }, 'WOID', id);
+  const success = await db.update('work_orders', { Status: 'In Progress' }, 'WOID', id);
+  if (success) {
+    showToast('İş emri başlatıldı: '+id);
+    await renderPage(currentPage);
+  } else {
+    showToast('Güncelleme başarısız!', 'danger');
   }
-  showToast('İş emri başlatıldı: '+id);
-  renderPage(currentPage);
 }
 
 function openLogForm(woId) {
@@ -49,11 +49,13 @@ function renderMaintenanceLogForm(el, preWO) {
 
 async function submitLog(e) {
   e.preventDefault();
+  const btn = e.target.querySelector('button[type="submit"]');
+  const ogHtml = btn.innerHTML;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Kaydediliyor...'; btn.disabled = true;
   const woId = document.getElementById('logWO').value;
   const wo = DEMO_WORK_ORDERS.find(w=>w.WOID===woId);
   if(wo) {
-    wo.Status = 'Completed';
-    db.update('work_orders', { Status: 'Completed' }, 'WOID', woId);
+    await db.update('work_orders', { Status: 'Completed' }, 'WOID', woId);
   }
   const newLog = {
     LogID:'ML-2024-'+ String(DEMO_MAINTENANCE_LOGS.length+1).padStart(5,'0'),
@@ -65,10 +67,14 @@ async function submitLog(e) {
     Outcome:document.getElementById('logOutcome').value,
     CompletionTimestamp:new Date().toISOString()
   };
-  DEMO_MAINTENANCE_LOGS.push(newLog);
-  db.insert('maintenance_records', [newLog]);
-  showToast('Bakım log kaydı oluşturuldu!');
-  navigateTo('dashboard');
+  const success = await db.insert('maintenance_records', [newLog]);
+  btn.innerHTML = ogHtml; btn.disabled = false;
+  if(success) {
+    showToast('Bakım log kaydı oluşturuldu!');
+    navigateTo('dashboard');
+  } else {
+    showToast('Kayıt başarısız!', 'danger');
+  }
 }
 
 // Alerts
@@ -87,15 +93,14 @@ function renderAlerts(el) {
 }
 
 async function ackAlert(id) {
-  const a=DEMO_ALERTS.find(x=>x.AlertID===id);
-  if(a){
-    a.AcknowledgedBy=currentUser.UserID;
-    a.AcknowledgementTimestamp=new Date().toISOString();
-    db.update('notifications', { AcknowledgedBy: a.AcknowledgedBy, AcknowledgementTimestamp: a.AcknowledgementTimestamp }, 'AlertID', id);
+  const success = await db.update('notifications', { AcknowledgedBy: currentUser.UserID, AcknowledgementTimestamp: new Date().toISOString() }, 'AlertID', id);
+  if (success) {
+    showToast('Alert onaylandı.');
+    await renderPage(currentPage);
+    renderTopbar();
+  } else {
+    showToast('Onaylama başarısız!', 'danger');
   }
-  showToast('Alert onaylandı.');
-  renderPage(currentPage);
-  renderTopbar();
 }
 
 // Production Entry
@@ -115,6 +120,9 @@ function renderProductionEntry(el) {
 
 async function submitProduction(e) {
   e.preventDefault();
+  const btn = e.target.querySelector('button[type="submit"]');
+  const ogHtml = btn.innerHTML;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Kaydediliyor...'; btn.disabled = true;
   const mid = document.getElementById('prodMachine').value;
   const m = getMachineById(mid);
   const hours = parseFloat(document.getElementById('prodHours').value);
@@ -128,11 +136,15 @@ async function submitProduction(e) {
     ProductionVolume:vol, CapacityUtilizationRate:+util.toFixed(1),
     RuntimeHours:hours, EntryTimestamp:new Date().toISOString()
   };
-  DEMO_PRODUCTION_RECORDS.push(newProd);
-  db.insert('production_data', [newProd]);
-  showToast('Üretim verisi kaydedildi!');
-  e.target.reset();
-  document.getElementById('prodDate').valueAsDate = new Date();
+  const success = await db.insert('production_data', [newProd]);
+  btn.innerHTML = ogHtml; btn.disabled = false;
+  if(success) {
+    showToast('Üretim verisi kaydedildi!');
+    e.target.reset();
+    document.getElementById('prodDate').valueAsDate = new Date();
+  } else {
+    showToast('Kayıt başarısız!', 'danger');
+  }
 }
 
 // Maintenance Plans
@@ -179,6 +191,9 @@ function renderWorkOrders(el) {
 
 async function submitWO(e) {
   e.preventDefault();
+  const btn = e.target.querySelector('button[type="submit"]');
+  const ogHtml = btn.innerHTML;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Oluşturuluyor...'; btn.disabled = true;
   const newWo = {
     WOID:'WO-2024-'+String(DEMO_WORK_ORDERS.length+1).padStart(5,'0'),
     PlanID:null, MachineID:document.getElementById('woMachine').value,
@@ -188,11 +203,15 @@ async function submitWO(e) {
     ScheduledDate:document.getElementById('woDate').value,
     Status:'Open', CreatedTimestamp:new Date().toISOString()
   };
-  DEMO_WORK_ORDERS.push(newWo);
-  db.insert('work_orders', [newWo]);
-  bootstrap.Modal.getInstance(document.getElementById('woModal')).hide();
-  showToast('İş emri oluşturuldu!');
-  renderWorkOrders(document.getElementById('mainContent'));
+  const success = await db.insert('work_orders', [newWo]);
+  btn.innerHTML = ogHtml; btn.disabled = false;
+  if (success) {
+    bootstrap.Modal.getInstance(document.getElementById('woModal')).hide();
+    showToast('İş emri oluşturuldu!');
+    await renderPage('work-orders');
+  } else {
+    showToast('Hata oluştu!', 'danger');
+  }
 }
 
 // Reports

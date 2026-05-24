@@ -96,24 +96,22 @@ function renderPendingPlansTable() {
 }
 
 async function approvePlan(id) {
-  const p = DEMO_MAINTENANCE_PLANS.find(x=>x.PlanID===id);
-  if(p){
-    p.PlanStatus='Approved';
-    p.ApprovedBy=currentUser.UserID;
-    p.ApprovalTimestamp=new Date().toISOString();
-    db.update('maintenance_schedules', { PlanStatus: p.PlanStatus, ApprovedBy: p.ApprovedBy, ApprovalTimestamp: p.ApprovalTimestamp }, 'PlanID', id);
+  const success = await db.update('maintenance_schedules', { PlanStatus: 'Approved', ApprovedBy: currentUser.UserID, ApprovalTimestamp: new Date().toISOString() }, 'PlanID', id);
+  if (success) {
+    showToast('Plan onaylandı: '+id);
+    await renderPage(currentPage);
+  } else {
+    showToast('Onaylama başarısız!', 'danger');
   }
-  showToast('Plan onaylandı: '+id);
-  renderPage(currentPage);
 }
 async function postponePlan(id) {
-  const p = DEMO_MAINTENANCE_PLANS.find(x=>x.PlanID===id);
-  if(p) {
-    p.PlanStatus='Postponed';
-    db.update('maintenance_schedules', { PlanStatus: p.PlanStatus }, 'PlanID', id);
+  const success = await db.update('maintenance_schedules', { PlanStatus: 'Postponed' }, 'PlanID', id);
+  if (success) {
+    showToast('Plan ertelendi: '+id,'warning');
+    await renderPage(currentPage);
+  } else {
+    showToast('Erteleme başarısız!', 'danger');
   }
-  showToast('Plan ertelendi: '+id,'warning');
-  renderPage(currentPage);
 }
 
 function drawOEEChart() {
