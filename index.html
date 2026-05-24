@@ -65,6 +65,19 @@
   <script src="js/supabase.js"></script>
   <script src="js/data.js"></script>
   <script>
+    function mapSupabaseUser(dbUser) {
+      if (!dbUser) return null;
+      return {
+        id: dbUser.id,
+        email: dbUser.email,
+        password: dbUser.password,
+        role: dbUser.role,
+        full_name: dbUser.full_name,
+        status: dbUser.status,
+        department: dbUser.department
+      };
+    }
+
     (async function() {
       // Check if already logged in
       const session = sessionStorage.getItem('pmdss_user');
@@ -111,7 +124,7 @@
         // 2) Fallback: check against loaded DEMO_USERS
         if (!user) {
           const localUser = getUserByEmail(email);
-          if (localUser && localUser.Password === password) {
+          if (localUser && (localUser.password === password || localUser.Password === password)) {
             user = localUser;
             console.log('📦 Authenticated via local data');
           }
