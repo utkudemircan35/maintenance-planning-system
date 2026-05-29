@@ -10,6 +10,16 @@ function initApp() {
   renderTopbar();
   navigateTo('dashboard');
   document.getElementById('sidebarOverlay').addEventListener('click', toggleSidebar);
+
+  // ✅ YENİ: Her 30 saniyede veriyi arka planda yenile
+  setInterval(async () => {
+    const active = document.activeElement;
+    const isTyping = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.tagName === 'SELECT');
+    if (!isTyping) {
+      await loadData();
+      renderTopbar(); // bildirim sayısını güncelle
+    }
+  }, 30000);
 }
 
 function logout() {
@@ -54,7 +64,7 @@ function getMenuItems() {
 
 function renderSidebar() {
   const menu = getMenuItems();
-  const initials = currentUser.full_name.split(' ').map(n=>n[0]).join('');
+  const initials = currentUser.full_name.split(' ').map(n => n[0]).join('');
   document.getElementById('sidebar').innerHTML = `
     <div class="sidebar-brand">
       <div class="brand-icon"><i class="fas fa-industry"></i></div>
@@ -62,7 +72,7 @@ function renderSidebar() {
     </div>
     <ul class="sidebar-menu">
       <li class="menu-label">Ana Menü</li>
-      ${menu.map(m => `<li><a href="#" data-page="${m.id}" onclick="navigateTo('${m.id}');return false;" class="${m.id==='dashboard'?'active':''}"><i class="fas ${m.icon}"></i>${m.label}</a></li>`).join('')}
+      ${menu.map(m => `<li><a href="#" data-page="${m.id}" onclick="navigateTo('${m.id}');return false;" class="${m.id === 'dashboard' ? 'active' : ''}"><i class="fas ${m.icon}"></i>${m.label}</a></li>`).join('')}
     </ul>
     <div class="sidebar-footer">
       <div class="sidebar-user">
@@ -84,7 +94,7 @@ function renderTopbar() {
       <h4 id="pageTitle">Dashboard</h4>
     </div>
     <div class="topbar-right">
-      <button class="btn-icon" onclick="navigateTo('${currentUser.role==='Technician'?'alerts':'alert-mgmt'}')" title="Bildirimler">
+      <button class="btn-icon" onclick="navigateTo('${currentUser.role === 'Technician' ? 'alerts' : 'alert-mgmt'}')" title="Bildirimler">
         <i class="fas fa-bell"></i>
         ${unack > 0 ? `<span class="notification-badge">${unack}</span>` : ''}
       </button>
@@ -94,15 +104,25 @@ function renderTopbar() {
 
 function navigateTo(page) {
   currentPage = page;
-  // Update sidebar active
   document.querySelectorAll('.sidebar-menu a').forEach(a => {
     a.classList.toggle('active', a.dataset.page === page);
   });
-  // Close mobile sidebar
   document.getElementById('sidebar').classList.remove('open');
   document.getElementById('sidebarOverlay').classList.remove('open');
-  // Update title
-  const titles = { dashboard:'Dashboard', 'production-entry':'Üretim Verisi Girişi', 'maintenance-plans':'Bakım Planları', 'work-orders':'İş Emirleri', reports:'Raporlar', 'maintenance-log':'Bakım Log Girişi', alerts:'Bildirimler', 'technician-perf':'Teknisyen Performansı', 'alert-mgmt':'Alert Yönetimi', users:'Kullanıcı Yönetimi', 'alert-config':'Alert Eşikleri', 'audit-log':'Audit Log' };
+  const titles = {
+    dashboard: 'Dashboard',
+    'production-entry': 'Üretim Verisi Girişi',
+    'maintenance-plans': 'Bakım Planları',
+    'work-orders': 'İş Emirleri',
+    reports: 'Raporlar',
+    'maintenance-log': 'Bakım Log Girişi',
+    alerts: 'Bildirimler',
+    'technician-perf': 'Teknisyen Performansı',
+    'alert-mgmt': 'Alert Yönetimi',
+    users: 'Kullanıcı Yönetimi',
+    'alert-config': 'Alert Eşikleri',
+    'audit-log': 'Audit Log'
+  };
   const t = document.getElementById('pageTitle');
   if (t) t.textContent = titles[page] || 'Dashboard';
   renderPage(page);
@@ -131,15 +151,16 @@ async function renderPage(page) {
   else if (page === 'alert-config') renderAlertConfig(main);
   else if (page === 'audit-log') renderAuditLog(main);
   else main.innerHTML = '<p>Sayfa bulunamadı.</p>';
+  renderTopbar(); // ✅ YENİ: her sayfa geçişinde bildirim sayısını güncelle
 }
 
-function showToast(msg, type='success') {
+function showToast(msg, type = 'success') {
   const c = document.getElementById('toastContainer');
   const id = 'toast-' + Date.now();
   c.innerHTML = `<div id="${id}" class="toast show align-items-center text-bg-${type} border-0" role="alert" style="border-radius:10px;">
     <div class="d-flex"><div class="toast-body">${msg}</div>
     <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div></div>`;
-  setTimeout(() => { const el = document.getElementById(id); if(el) el.remove(); }, 3000);
+  setTimeout(() => { const el = document.getElementById(id); if (el) el.remove(); }, 3000);
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
