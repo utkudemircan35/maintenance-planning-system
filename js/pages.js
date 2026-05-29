@@ -105,7 +105,7 @@ function renderProductionEntry(el) {
   el.innerHTML = `<div class="panel fade-in"><div class="panel-header"><h5><i class="fas fa-keyboard me-2" style="color:var(--accent)"></i>Üretim Verisi Girişi</h5></div>
   <div class="panel-body"><form class="form-modern" onsubmit="submitProduction(event)">
     <div class="row g-3">
-      <div class="col-md-6"><label class="form-label">Makine</label><select class="form-select" id="prodMachine" required>${DEMO_MACHINES.filter(m => m.status === 'active').map(m => `<option value="${m.id}">${m.machine_name} (${m.machine_code})</option>`).join('')}</select></div>
+      <div class="col-md-6"><label class="form-label">Makine</label><select class="form-select" id="prodMachine" required>${DEMO_MACHINES.filter(m => m.status?.toLowerCase() === 'active').map(m => `<option value="${m.id}">${m.machine_name} (${m.machine_code})</option>`).join('')}</select></div>
       <div class="col-md-6"><label class="form-label">Vardiya Tarihi</label><input type="date" class="form-control" id="prodDate" required></div>
       <div class="col-md-4"><label class="form-label">Üretim Hacmi (adet)</label><input type="number" class="form-control" id="prodVolume" min="0" required></div>
       <div class="col-md-4"><label class="form-label">Çalışma Saati</label><input type="number" class="form-control" id="prodHours" step="0.5" min="0" max="8" required></div>
