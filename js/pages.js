@@ -157,7 +157,10 @@ function renderMaintenancePlans(el) {
       <td><span style="color:${getRiskColor(risk)};font-weight:700;">${risk}</span></td>
       <td>${formatDate(p.planned_date)}</td>
       <td><span class="badge bg-${getStatusBadge(p.status)} badge-pill">${p.status}</span></td>
-      <td>${p.status === 'planned' ? `<button class="btn btn-sm btn-accent me-1" onclick="approvePlan('${p.id}')"><i class="fas fa-check"></i></button><button class="btn btn-sm btn-outline-secondary" onclick="postponePlan('${p.id}')"><i class="fas fa-clock"></i></button>` : '-'}</td>
+     <td>${['planned','pending'].includes(p.status?.toLowerCase()) ? 
+  `<button class="btn btn-sm btn-accent me-1" onclick="approvePlan('${p.id}')"><i class="fas fa-check"></i></button>
+   <button class="btn btn-sm btn-outline-secondary" onclick="postponePlan('${p.id}')"><i class="fas fa-clock"></i></button>` 
+  : '-'}</td>
     </tr>`;
   }).join('')}</tbody></table></div></div></div>`;
 }
