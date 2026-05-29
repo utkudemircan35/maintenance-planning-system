@@ -84,7 +84,7 @@ function renderPendingPlansTable() {
     <th>Plan ID</th><th>Makine</th><th>Tip</th><th>Risk</th><th>Önerilen Tarih</th><th>İşlem</th>
   </tr></thead><tbody>${pending.map(p => {
     const m = getMachineById(p.machine_id);
-    const risk = m ? RISK_SCORES[m.id] : 0;
+    const risk = p.risk_score || (m ? RISK_SCORES[m.id] : 0);
     return `<tr>
       <td><strong>${p.id}</strong></td>
       <td>${m ? m.machine_name : p.machine_id}</td>
