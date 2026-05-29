@@ -203,6 +203,7 @@ async function submitWO(e) {
   const machineId = document.getElementById('woMachine').value;
   const techId = document.getElementById('woTech').value;
   const newWo = {
+    id: 'WO-' + new Date().getFullYear() + '-' + String(Date.now()).slice(-5),
     machine_id: machineId,
     machine_name: getMachineById(machineId)?.machine_name,
     technician: techId,
@@ -210,6 +211,7 @@ async function submitWO(e) {
     date: document.getElementById('woDate').value,
     status: 'Open',
     created_at: new Date().toISOString()
+};
   };
   const success = await db.insert('work_orders', [newWo]);
   btn.innerHTML = ogHtml; btn.disabled = false;
