@@ -148,7 +148,7 @@ async function submitProduction(e) {
 function renderMaintenancePlans(el) {
   el.innerHTML = `<div class="panel fade-in"><div class="panel-header"><h5><i class="fas fa-clipboard-list me-2" style="color:var(--accent)"></i>Bakım Planları</h5></div>
   <div class="panel-body"><div class="table-responsive"><table class="table-modern"><thead><tr><th>Plan ID</th><th>Makine</th><th>Tip</th><th>Risk</th><th>Tarih</th><th>Durum</th><th>İşlem</th></tr></thead><tbody>
-  ${DEMO_MAINTENANCE_SCHEDULES.map(p => {
+  ${DEMO_MAINTENANCE_PLANS.map(p => {
     const m = getMachineById(p.machine_id);
     const risk = m ? RISK_SCORES[m.id] : 0;
     return `<tr>
