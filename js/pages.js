@@ -153,7 +153,7 @@ function renderMaintenancePlans(el) {
     const risk = m ? RISK_SCORES[m.id] : 0;
     return `<tr>
       <td><strong>${p.id}</strong></td><td>${m ? m.machine_name : p.machine_id}</td>
-      <td><span class="badge bg-${p.priority === 'High' ? 'danger' : p.priority === 'Medium' ? 'info' : 'success'} badge-pill">${p.priority}</span></td>
+      <td><span class="badge bg-${p.type === 'Corrective' ? 'danger' : p.type === 'Predictive' ? 'info' : 'success'} badge-pill">${p.type || '-'}</span></td>
       <td><span style="color:${getRiskColor(risk)};font-weight:700;">${risk}</span></td>
       <td>${formatDate(p.planned_date)}</td>
       <td><span class="badge bg-${getStatusBadge(p.status)} badge-pill">${p.status}</span></td>
