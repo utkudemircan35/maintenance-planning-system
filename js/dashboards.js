@@ -65,7 +65,6 @@ function renderAlertList() {
 function renderRiskGrid() {
   return DEMO_MACHINES.map(m => {
     const score = RISK_SCORES[m.id] || 0;
-    const color = getRiskColor(score);
     const bg = score >= 85 ? 'linear-gradient(135deg,#dc2626,#ef4444)' : score >= 60 ? 'linear-gradient(135deg,#ca8a04,#eab308)' : 'linear-gradient(135deg,#16a34a,#22c55e)';
     return `<div class="risk-cell" style="background:${bg};" title="${m.machine_name}">
       <div class="machine-name">${m.machine_name}</div>
@@ -76,7 +75,10 @@ function renderRiskGrid() {
 }
 
 function renderPendingPlansTable() {
-  const pending = DEMO_MAINTENANCE_PLANS.filter(p => p.status === 'planned');
+  // ✅ DEĞİŞİKLİK: maintenance_schedules → maintenance_plans
+  const pending = DEMO_MAINTENANCE_PLANS.filter(p =>
+    p.status?.toLowerCase() === 'planned' || p.status?.toLowerCase() === 'pending'
+  );
   if (!pending.length) return '<p class="text-muted mb-0">Bekleyen plan yok.</p>';
   return `<div class="table-responsive"><table class="table-modern"><thead><tr>
     <th>Plan ID</th><th>Makine</th><th>Tip</th><th>Risk</th><th>Önerilen Tarih</th><th>İşlem</th>
@@ -86,7 +88,7 @@ function renderPendingPlansTable() {
     return `<tr>
       <td><strong>${p.id}</strong></td>
       <td>${m ? m.machine_name : p.machine_id}</td>
-      <td><span class="badge bg-${p.priority === 'High' ? 'danger' : p.priority === 'Medium' ? 'info' : 'success'} badge-pill">${p.priority}</span></td>
+      <td><span class="badge bg-${p.priority === 'High' ? 'danger' : p.priority === 'Medium' ? 'info' : 'success'} badge-pill">${p.priority || '-'}</span></td>
       <td><span style="color:${getRiskColor(risk)};font-weight:700;">${risk}</span></td>
       <td>${formatDate(p.planned_date)}</td>
       <td>
@@ -97,19 +99,25 @@ function renderPendingPlansTable() {
   }).join('')}</tbody></table></div>`;
 }
 
+// ✅ DEĞİŞİKLİK: maintenance_schedules → maintenance_plans
 async function approvePlan(id) {
-  const success = await db.update('maintenance_schedules', { status: 'approved' }, 'id', id);
+  const success = await db.update('maintenance_plans', { status: 'approved' }, 'id', id);
   if (success) {
+    await logAudit('Bakım planı onaylandı: ' + id);
     showToast('Plan onaylandı: ' + id);
+    await loadData();
     await renderPage(currentPage);
   } else {
     showToast('Onaylama başarısız!', 'danger');
   }
 }
+
 async function postponePlan(id) {
-  const success = await db.update('maintenance_schedules', { status: 'postponed' }, 'id', id);
+  const success = await db.update('maintenance_plans', { status: 'postponed' }, 'id', id);
   if (success) {
+    await logAudit('Bakım planı ertelendi: ' + id);
     showToast('Plan ertelendi: ' + id, 'warning');
+    await loadData();
     await renderPage(currentPage);
   } else {
     showToast('Erteleme başarısız!', 'danger');
@@ -175,9 +183,9 @@ function renderExecDashboard(el) {
       <div class="table-responsive"><table class="table-modern"><thead><tr><th>Makine</th><th>Konum</th><th>Kritiklik</th><th>Risk Score</th><th>Durum</th></tr></thead><tbody>
       ${topRisk.map(m => `<tr>
         <td><strong>${m.machine_name}</strong></td><td>${m.location}</td>
-        <td><span class="badge bg-${m.criticality === 'Critical' ? 'danger' : m.criticality === 'High' ? 'warning' : 'secondary'} badge-pill">${m.criticality}</span></td>
+        <td><span class="badge bg-${m.criticality === 'Critical' ? 'danger' : m.criticality === 'High' ? 'warning' : 'secondary'} badge-pill">${m.criticality || '-'}</span></td>
         <td><span style="color:${getRiskColor(m.risk)};font-weight:700;font-size:16px;">${m.risk}</span></td>
-        <td><span class="badge bg-${m.status === 'active' ? 'success' : m.status === 'Under Maintenance' ? 'warning' : 'secondary'} badge-pill">${m.status}</span></td>
+        <td><span class="badge bg-${m.status?.toLowerCase() === 'active' ? 'success' : m.status === 'Under Maintenance' ? 'warning' : 'secondary'} badge-pill">${m.status}</span></td>
       </tr>`).join('')}
       </tbody></table></div>
     </div></div></div>
@@ -222,7 +230,7 @@ function drawGaugeChart(val) {
 function drawScatterChart() {
   const ctx = document.getElementById('scatterChart');
   if (!ctx) return;
-  const data = DEMO_MACHINES.map(m => ({ x: +(Math.random() * 20 + 5).toFixed(1), y: +(Math.random() * 15000 + 2000).toFixed(0) * 1, label: m.machine_name }));
+  const data = DEMO_MACHINES.map(m => ({ x: +(Math.random() * 20 + 5).toFixed(1), y: +(Math.random() * 15000 + 2000).toFixed(0) }));
   new Chart(ctx, {
     type: 'scatter',
     data: { datasets: [{ data: data.map(d => ({ x: d.x, y: d.y })), backgroundColor: 'rgba(13,148,136,.6)', pointRadius: 8, pointHoverRadius: 11 }] },
