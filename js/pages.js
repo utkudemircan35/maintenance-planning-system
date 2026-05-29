@@ -211,7 +211,6 @@ async function submitWO(e) {
     date: document.getElementById('woDate').value,
     status: 'Open',
     created_at: new Date().toISOString()
-};
   };
   const success = await db.insert('work_orders', [newWo]);
   btn.innerHTML = ogHtml; btn.disabled = false;
@@ -225,7 +224,6 @@ async function submitWO(e) {
     showToast('Hata oluştu!', 'danger');
   }
 }
-
 // ─── Reports ──────────────────────────────────────────────────────────
 function renderReports(el) {
   el.innerHTML = `<div class="row g-3">
