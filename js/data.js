@@ -21,7 +21,7 @@ async function loadData() {
       db.select('machines'),
       db.select('production_data'),
       db.select('maintenance_records'),
-      db.select('maintenance_schedules'),
+      db.select('maintenance_plans'),
       db.select('notifications'),
       db.select('failure_records'),
       db.select('work_orders'),
