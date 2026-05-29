@@ -1,12 +1,11 @@
-// PM-DSS Data Layer — Supabase-first with local fallback
-
 // PM-DSS Data Layer — Supabase-first
 
-// ─── Active Data Arrays (mutable, used by all app code) ───────────────
+// ─── Active Data Arrays ───────────────────────────────────────────────
 let DEMO_USERS = [];
 let DEMO_MACHINES = [];
 let DEMO_PRODUCTION_RECORDS = [];
 let DEMO_MAINTENANCE_PLANS = [];
+let DEMO_MAINTENANCE_SCHEDULES = [];
 let DEMO_WORK_ORDERS = [];
 let DEMO_MAINTENANCE_LOGS = [];
 let DEMO_ALERTS = [];
@@ -14,7 +13,7 @@ let DEMO_AUDIT_LOG = [];
 let RISK_SCORES = {};
 let OEE_TREND = [];
 
-// ─── Load Data: try Supabase first ────────────────
+// ─── Load Data: Supabase-first ────────────────────────────────────────
 async function loadData() {
   try {
     const results = await Promise.all([
@@ -40,6 +39,7 @@ async function loadData() {
     DEMO_MACHINES = machines || [];
     DEMO_ALERTS = alerts || [];
     DEMO_MAINTENANCE_PLANS = plans || [];
+    DEMO_MAINTENANCE_SCHEDULES = plans || [];
     DEMO_MAINTENANCE_LOGS = maintRecords || [];
     DEMO_WORK_ORDERS = workOrders || [];
     DEMO_PRODUCTION_RECORDS = prodData || [];
@@ -53,11 +53,16 @@ async function loadData() {
   OEE_TREND = generateOEEData();
 }
 
-
 // ─── Risk Score Calculation ───────────────────────────────────────────
 function calculateRiskScores() {
   const scores = {};
   DEMO_MACHINES.forEach(m => {
+    // Supabase'den gelen risk_score varsa direkt kullan
+    if (m.risk_score !== null && m.risk_score !== undefined) {
+      scores[m.id] = +parseFloat(m.risk_score).toFixed(1);
+      return;
+    }
+    // Yoksa hesapla
     const records = DEMO_PRODUCTION_RECORDS.filter(r => r.machine_id == m.id);
     const last3 = records.slice(-3);
     const avgUtil = last3.length ? last3.reduce((s, r) => s + r.capacity_usage, 0) / last3.length : 50;
@@ -69,15 +74,6 @@ function calculateRiskScores() {
     const normFailure = Math.min(corrLogs / 3, 1);
     let score = (0.40 * avgUtil) + (0.35 * normRuntime * 100) + (0.25 * normFailure * 100);
     score = Math.min(100, Math.max(0, score));
-    // Override for demo realism
-    if (m.machine_code === 'MCH-001') score = 91;
-    if (m.machine_code === 'MCH-006') score = 88;
-    if (m.machine_code === 'MCH-004') score = 78;
-    if (m.machine_code === 'MCH-002') score = 65;
-    if (m.machine_code === 'MCH-003') score = 45;
-    if (m.machine_code === 'MCH-005') score = 38;
-    if (m.machine_code === 'MCH-007') score = 52;
-    if (m.machine_code === 'MCH-008') score = 22;
     scores[m.id] = +score.toFixed(1);
   });
   return scores;
@@ -94,6 +90,19 @@ function generateOEEData() {
     data.push({ date: date.toISOString().split('T')[0], oee: +base.toFixed(1) });
   }
   return data;
+}
+
+// ─── Audit Log Helper ─────────────────────────────────────────────────
+async function logAudit(action) {
+  try {
+    await db.insert('audit_log', [{
+      user_name: currentUser ? currentUser.full_name : 'System',
+      action: action,
+      created_at: new Date().toISOString()
+    }]);
+  } catch(e) {
+    console.warn('Audit log yazılamadı:', e.message);
+  }
 }
 
 // ─── Helper Functions ─────────────────────────────────────────────────
