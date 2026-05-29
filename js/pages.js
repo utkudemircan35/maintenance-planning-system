@@ -150,7 +150,7 @@ function renderMaintenancePlans(el) {
   <div class="panel-body"><div class="table-responsive"><table class="table-modern"><thead><tr><th>Plan ID</th><th>Makine</th><th>Tip</th><th>Risk</th><th>Tarih</th><th>Durum</th><th>İşlem</th></tr></thead><tbody>
   ${DEMO_MAINTENANCE_PLANS.map(p => {
     const m = getMachineById(p.machine_id);
-    const risk = m ? RISK_SCORES[m.id] : 0;
+    const risk = p.risk_score || (m ? RISK_SCORES[m.id] : 0);
     return `<tr>
       <td><strong>${p.id}</strong></td><td>${m ? m.machine_name : p.machine_id}</td>
       <td><span class="badge bg-${p.type === 'Corrective' ? 'danger' : p.type === 'Predictive' ? 'info' : 'success'} badge-pill">${p.type || '-'}</span></td>
