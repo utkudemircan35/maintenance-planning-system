@@ -16,19 +16,21 @@ let OEE_TREND = [];
 // ─── Load Data: Supabase-first ────────────────────────────────────────
 async function loadData() {
   try {
-    const results = await Promise.all([
-      db.select('users'),
-      db.select('machines'),
-      db.select('production_data'),
-      db.select('maintenance_records'),
-      db.select('maintenance_plans'),
-      db.select('notifications'),
-      db.select('failure_records'),
-      db.select('work_orders'),
-      db.select('audit_log')
-    ]);
+  const results = await Promise.all([
+  db.select('users'),
+  db.select('machines'),
+  db.select('production_data'),
+  db.select('maintenance_logs'),    // ✅ maintenance_records → maintenance_logs
+  db.select('maintenance_plans'),
+  db.select('alerts'),              // ✅ notifications → alerts
+  db.select('work_orders'),
+  db.select('audit_log')
+]);
 
-    const [users, machines, prodData, maintRecords, plans, alerts, failures, workOrders, auditLog] = results;
+const [users, machines, prodData, maintLogs, plans, alerts, workOrders, auditLog] = results;
+// ...
+DEMO_MAINTENANCE_LOGS = maintLogs || [];
+DEMO_ALERTS = alerts || [];
 
     if (users) {
       DEMO_USERS = users;
