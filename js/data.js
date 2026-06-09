@@ -35,14 +35,14 @@ async function loadData() {
       console.log('✅ Users loaded from Supabase (' + users.length + ' users)');
     } else { DEMO_USERS = []; }
 
-    DEMO_MACHINES            = machines   || [];
-    DEMO_ALERTS              = alerts     || [];
-    DEMO_MAINTENANCE_PLANS   = plans      || [];
-    DEMO_MAINTENANCE_SCHEDULES = plans    || [];
-    DEMO_MAINTENANCE_LOGS    = maintLogs  || [];  // ✅ maintRecords → maintLogs
-    DEMO_WORK_ORDERS         = workOrders || [];
-    DEMO_PRODUCTION_RECORDS  = prodData   || [];
-    DEMO_AUDIT_LOG           = auditLog   || [];
+    DEMO_MACHINES              = machines   || [];
+    DEMO_ALERTS                = alerts     || [];
+    DEMO_MAINTENANCE_PLANS     = plans      || [];
+    DEMO_MAINTENANCE_SCHEDULES = plans      || [];
+    DEMO_MAINTENANCE_LOGS      = maintLogs  || [];
+    DEMO_WORK_ORDERS           = workOrders || [];
+    DEMO_PRODUCTION_RECORDS    = prodData   || [];
+    DEMO_AUDIT_LOG             = auditLog   || [];
 
   } catch (e) {
     console.warn('⚠️ Supabase unavailable:', e.message);
@@ -56,12 +56,10 @@ async function loadData() {
 function calculateRiskScores() {
   const scores = {};
   DEMO_MACHINES.forEach(m => {
-    // Supabase'den gelen risk_score varsa direkt kullan
     if (m.risk_score !== null && m.risk_score !== undefined) {
       scores[m.id] = +parseFloat(m.risk_score).toFixed(1);
       return;
     }
-    // Yoksa hesapla
     const records = DEMO_PRODUCTION_RECORDS.filter(r => r.machine_id == m.id);
     const last3 = records.slice(-3);
     const avgUtil = last3.length ? last3.reduce((s, r) => s + r.capacity_usage, 0) / last3.length : 50;
