@@ -16,21 +16,18 @@ let OEE_TREND = [];
 // ─── Load Data: Supabase-first ────────────────────────────────────────
 async function loadData() {
   try {
-  const results = await Promise.all([
-  db.select('users'),
-  db.select('machines'),
-  db.select('production_data'),
-  db.select('maintenance_logs'),    // ✅ maintenance_records → maintenance_logs
-  db.select('maintenance_plans'),
-  db.select('alerts'),              // ✅ notifications → alerts
-  db.select('work_orders'),
-  db.select('audit_log')
-]);
+    const results = await Promise.all([
+      db.select('users'),
+      db.select('machines'),
+      db.select('production_data'),
+      db.select('maintenance_logs'),
+      db.select('maintenance_plans'),
+      db.select('alerts'),
+      db.select('work_orders'),
+      db.select('audit_log')
+    ]);
 
-const [users, machines, prodData, maintLogs, plans, alerts, workOrders, auditLog] = results;
-// ...
-DEMO_MAINTENANCE_LOGS = maintLogs || [];
-DEMO_ALERTS = alerts || [];
+    const [users, machines, prodData, maintLogs, plans, alerts, workOrders, auditLog] = results;
 
     if (users) {
       DEMO_USERS = users;
@@ -38,21 +35,21 @@ DEMO_ALERTS = alerts || [];
       console.log('✅ Users loaded from Supabase (' + users.length + ' users)');
     } else { DEMO_USERS = []; }
 
-    DEMO_MACHINES = machines || [];
-    DEMO_ALERTS = alerts || [];
-    DEMO_MAINTENANCE_PLANS = plans || [];
-    DEMO_MAINTENANCE_SCHEDULES = plans || [];
-    DEMO_MAINTENANCE_LOGS = maintRecords || [];
-    DEMO_WORK_ORDERS = workOrders || [];
-    DEMO_PRODUCTION_RECORDS = prodData || [];
-    DEMO_AUDIT_LOG = auditLog || [];
+    DEMO_MACHINES            = machines   || [];
+    DEMO_ALERTS              = alerts     || [];
+    DEMO_MAINTENANCE_PLANS   = plans      || [];
+    DEMO_MAINTENANCE_SCHEDULES = plans    || [];
+    DEMO_MAINTENANCE_LOGS    = maintLogs  || [];  // ✅ maintRecords → maintLogs
+    DEMO_WORK_ORDERS         = workOrders || [];
+    DEMO_PRODUCTION_RECORDS  = prodData   || [];
+    DEMO_AUDIT_LOG           = auditLog   || [];
 
   } catch (e) {
     console.warn('⚠️ Supabase unavailable:', e.message);
   }
 
   RISK_SCORES = calculateRiskScores();
-  OEE_TREND = generateOEEData();
+  OEE_TREND   = generateOEEData();
 }
 
 // ─── Risk Score Calculation ───────────────────────────────────────────
